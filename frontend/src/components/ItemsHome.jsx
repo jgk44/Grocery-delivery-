@@ -23,11 +23,15 @@ const ItemsHome = () => {
   useEffect(() => {
     axios.get("http://localhost:4000/api/items")
       .then(res => {
-        console.log("🔍 API returned:", res.data);
-        setProducts(res.data);
+        const normalized = res.data.map(p => ({
+          ...p,
+          id: p._id,            // <- add an `id` alias
+        }));
+        setProducts(normalized);
       })
-      .catch(err => console.error("API error:", err));
+      .catch(console.error);
   }, []);
+  
 
   const navigate = useNavigate();
   const { cart, addToCart, updateQuantity, removeFromCart } = useCart();
