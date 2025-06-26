@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   FaArrowLeft,
   FaUser,
@@ -12,7 +13,6 @@ import { loginStyles } from "../assets/dummyStyles";
 import Logout from "./Logout";
 
 const Login = () => {
-  // Hook declarations must be before any return
   const [isAuthenticated, setIsAuthenticated] = useState(
     Boolean(localStorage.getItem("authToken"))
   );
@@ -26,7 +26,6 @@ const Login = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Listen for auth changes
   useEffect(() => {
     const handler = () => {
       setIsAuthenticated(Boolean(localStorage.getItem("authToken")));
@@ -35,12 +34,10 @@ const Login = () => {
     return () => window.removeEventListener("authStateChanged", handler);
   }, []);
 
-  // If already logged in, just show <Logout />
   if (isAuthenticated) {
     return <Logout />;
   }
 
-  // Form handlers
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -49,44 +46,58 @@ const Login = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
     if (!formData.remember) {
       setError('You must agree to "Remember me" before signing in.');
       return;
     }
 
-    // Generate mock token and store user data
-    const token = 'mock_token';
-    const userData = {
-      email: formData.email,
-      token,
-      timestamp: new Date().toISOString(),
-    };
+    try {
+      const response = await axios.post(
+        "http://localhost:4000/api/user/login",
+        {
+          email: formData.email,
+          password: formData.password,
+        },
+        { headers: { "Content-Type": "application/json" } }
+      );
 
-    localStorage.setItem("authToken", token);
-    localStorage.setItem("userData", JSON.stringify(userData));
+      if (response.data.success) {
+        const { token, user } = response.data;
+        // Persist token & user
+        localStorage.setItem("authToken", token);
+        localStorage.setItem("userData", JSON.stringify(user));
 
-    setError("");
-    setShowToast(true);
+        setShowToast(true);
+        window.dispatchEvent(new Event("authStateChanged"));
 
-    // Notify other components about auth change
-    window.dispatchEvent(new Event("authStateChanged"));
-
-    setTimeout(() => {
-      navigate("/");
-    });
+        // After toast, redirect home
+        setTimeout(() => {
+          navigate("/");
+        }, 1000);
+      } else {
+        // API responded with success: false
+        setError(response.data.message || "Login failed");
+      }
+    } catch (err) {
+      // Network or server error
+      if (err.response && err.response.data) {
+        setError(err.response.data.message || "Login error");
+      } else {
+        setError("Unable to reach server");
+      }
+    }
   };
 
   return (
     <div className={loginStyles.page}>
-      {/* Back to Home */}
       <Link to="/" className={loginStyles.backLink}>
         <FaArrowLeft className="mr-2" />
         Back to Home
       </Link>
 
-      {/* Toast Notification */}
       {showToast && (
         <div className={loginStyles.toast}>
           <FaCheck className="mr-2" />
@@ -94,9 +105,7 @@ const Login = () => {
         </div>
       )}
 
-      {/* Login Card */}
       <div className={loginStyles.loginCard}>
-        {/* Logo Avatar */}
         <div className={loginStyles.logoContainer}>
           <div className={loginStyles.logoOuter}>
             <div className={loginStyles.logoInner}>
@@ -108,7 +117,6 @@ const Login = () => {
         <h2 className={loginStyles.title}>Welcome Back</h2>
 
         <form onSubmit={handleSubmit} className={loginStyles.form}>
-          {/* Email */}
           <div className={loginStyles.inputContainer}>
             <FaUser className={loginStyles.inputIcon} />
             <input
@@ -122,7 +130,6 @@ const Login = () => {
             />
           </div>
 
-          {/* Password */}
           <div className={loginStyles.inputContainer}>
             <FaLock className={loginStyles.inputIcon} />
             <input
@@ -144,7 +151,6 @@ const Login = () => {
             </button>
           </div>
 
-          {/* Remember + Forgot */}
           <div className={loginStyles.rememberContainer}>
             <label className={loginStyles.rememberLabel}>
               <input
@@ -170,7 +176,7 @@ const Login = () => {
         </form>
 
         <p className={loginStyles.signupText}>
-          Don't have an account?{' '}
+          Don't have an account?{" "}
           <Link to="/signup" className={loginStyles.signupLink}>
             Sign Up
           </Link>
