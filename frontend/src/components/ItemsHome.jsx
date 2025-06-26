@@ -1,21 +1,33 @@
 import React, { useState, useEffect } from "react";
 import { FaShoppingCart, FaChevronRight, FaMinus, FaPlus, FaThList } from "react-icons/fa";
-import { categories, products } from "../assets/dummyData.jsx";
+import { categories } from "../assets/dummyData";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../CartContext";
 import BannerHome from "../components/BannerHome";
 import { itemsHomeStyles } from "../assets/dummyStyles.js";
 
+import axios from 'axios'
+
 const ItemsHome = () => {
+  const [products, setProducts] = useState([]);
   // 1) Initialize from localStorage (or "All" if nothing is stored)
-  const [activeCategory, setActiveCategory] = useState(() => {
-    return localStorage.getItem("activeCategory") || "All";
-  });
+  const [activeCategory, setActiveCategory] = useState(() =>
+    localStorage.getItem("activeCategory") || "All"
+  );
 
   // 2) Whenever activeCategory changes, save it
   useEffect(() => {
     localStorage.setItem("activeCategory", activeCategory);
   }, [activeCategory]);
+
+  useEffect(() => {
+    axios.get("http://localhost:4000/api/items")
+      .then(res => {
+        console.log("🔍 API returned:", res.data);
+        setProducts(res.data);
+      })
+      .catch(err => console.error("API error:", err));
+  }, []);
 
   const navigate = useNavigate();
   const { cart, addToCart, updateQuantity, removeFromCart } = useCart();
@@ -68,8 +80,8 @@ const ItemsHome = () => {
 
   // Create sidebar categories with "All Items" as first item
   const sidebarCategories = [
-    { 
-      name: "All Items", 
+    {
+      name: "All Items",
       icon: <FaThList className="text-lg" />,
       value: "All"
     },
@@ -107,8 +119,8 @@ const ItemsHome = () => {
                       setSearchTerm(''); // Clear search when changing category
                     }}
                     className={`${itemsHomeStyles.categoryItem} ${(activeCategory === (category.value || category.name)) && !searchTerm
-                        ? itemsHomeStyles.activeCategory
-                        : itemsHomeStyles.inactiveCategory
+                      ? itemsHomeStyles.activeCategory
+                      : itemsHomeStyles.inactiveCategory
                       }`}
                   >
                     <div className={itemsHomeStyles.categoryIcon}>
@@ -135,8 +147,8 @@ const ItemsHome = () => {
                     setSearchTerm(''); // Clear search when changing category
                   }}
                   className={`${itemsHomeStyles.mobileCategoryItem} ${activeCategory === (cat.value || cat.name) && !searchTerm
-                      ? itemsHomeStyles.activeMobileCategory
-                      : itemsHomeStyles.inactiveMobileCategory
+                    ? itemsHomeStyles.activeMobileCategory
+                    : itemsHomeStyles.inactiveMobileCategory
                     }`}
                 >
                   {cat.name}
@@ -185,12 +197,12 @@ const ItemsHome = () => {
                 const qty = getQuantity(product.id);
                 return (
                   <div
-                    key={product.id}
+                    key={product._id}
                     className={itemsHomeStyles.productCard}
                   >
                     <div className={itemsHomeStyles.imageContainer}>
                       <img
-                        src={product.image}
+                        src={`http://localhost:4000${product.imageUrl}`}
                         alt={product.name}
                         className={itemsHomeStyles.productImage}
                         onError={(e) => {
