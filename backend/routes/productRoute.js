@@ -1,28 +1,29 @@
+// backend/routes/productRoute.js
+
 import express from 'express';
 import multer from 'multer';
 import {
     getProducts,
-    getProductById,
     createProduct,
-    updateProduct,
     deleteProduct,
 } from '../controllers/productController.js';
 
 const itemrouter = express.Router();
+
+// Multer setup for file uploads
 const storage = multer.diskStorage({
     destination: (_req, _file, cb) => cb(null, 'uploads/'),
     filename: (_req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
 });
 const upload = multer({ storage });
 
-itemrouter.post('/', upload.single('image'), createProduct);
-itemrouter.route('/')
-    .get(getProducts)
-    .post(createProduct);
+// GET all products
+itemrouter.get('/', getProducts);
 
-itemrouter.route('/:id')
-    .get(getProductById)
-    .put(updateProduct)
-    .delete(deleteProduct);
+// POST create a new product (with optional image upload)
+itemrouter.post('/', upload.single('image'), createProduct);
+
+// DELETE a product by ID
+itemrouter.delete('/:id', deleteProduct);
 
 export default itemrouter;
