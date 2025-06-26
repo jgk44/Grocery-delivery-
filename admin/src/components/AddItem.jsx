@@ -48,11 +48,7 @@ const AddItemPage = () => {
       category: formData.category,
       oldPrice: formData.oldPrice,
       price: formData.price,
-      image: formData.image ? {
-        name: formData.image.name,
-        type: formData.image.type,
-        size: formData.image.size
-      } : 'No image uploaded'
+      image: formData.image,
     };
 
     // Log all form data to console
