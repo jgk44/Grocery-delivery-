@@ -4,6 +4,7 @@ import express from 'express';
 import { connectDB } from './config/db.js';
 
 import userRouter from './routes/userRoute.js';
+import cartRouter from './routes/cartRoute.js'
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -18,6 +19,7 @@ connectDB();
 
 // Routes
 app.use("/api/user", userRouter);
+app.use('/api/cart', cartRouter)
 
 app.get('/', (req, res) => {
     res.send('API Working');
