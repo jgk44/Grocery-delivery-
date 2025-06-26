@@ -1,93 +1,72 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { FiArrowLeft, FiChevronDown, FiChevronUp, FiPlus, FiMinus, FiX, FiSearch } from 'react-icons/fi';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../CartContext';
 import { groceryData } from '../assets/dummyDataItem';
 import { itemsPageStyles } from '../assets/dummyStyles';
 
+// Backend base URL
+const BACKEND_URL = 'http://localhost:4000';
+
 const ProductCard = ({ item }) => {
   const { addToCart, removeFromCart, updateQuantity, cart } = useCart();
 
   // Get current quantity in cart
-  const cartItem = cart.find(cartItem => cartItem.id === item.id);
+  const uniqueId = item.id || item._id;
+  const cartItem = cart.find(ci => ci.id === uniqueId);
   const quantity = cartItem ? cartItem.quantity : 0;
 
-  const handleAddToCart = () => {
-    addToCart(item);
-  };
+  const handleAddToCart = () =>
+  addToCart({ ...item, id: uniqueId, quantity: 1 });
+  const handleIncrement = () =>
+  updateQuantity(uniqueId, quantity + 1);
 
-  const handleIncrement = () => {
-    if (quantity === 0) {
-      addToCart(item);
-    } else {
-      updateQuantity(item.id, quantity + 1);
-    }
-  };
+const handleDecrement = () => {
+  if (quantity <= 1) removeFromCart(uniqueId);
+  else updateQuantity(uniqueId, quantity - 1);
+};
 
-  const handleDecrement = () => {
-    if (quantity === 1) {
-      removeFromCart(item.id);
-    } else if (quantity > 1) {
-      updateQuantity(item.id, quantity - 1);
-    }
-  };
+  // resolve image URL
+  const rawImage = item.image || item.imageUrl;
+  let imgSrc = item.image;
+  if (rawImage) {
+    if (rawImage.startsWith('http')) imgSrc = rawImage;
+    else if (rawImage.startsWith('/')) imgSrc = `${BACKEND_URL}${rawImage}`;
+    else imgSrc = `${BACKEND_URL}/uploads/${rawImage}`;
+  }
 
   return (
     <div className={itemsPageStyles.productCard}>
       <div className={itemsPageStyles.imageContainer}>
         <img
-          src={item.image}
+          src={imgSrc}
           className={itemsPageStyles.productImage}
           alt={item.name}
         />
       </div>
       <div className={itemsPageStyles.cardContent}>
         <div className={itemsPageStyles.titleContainer}>
-          <h3 className={itemsPageStyles.productTitle}>
-            {item.name}
-          </h3>
-          
+          <h3 className={itemsPageStyles.productTitle}>{item.name}</h3>
         </div>
-
         <p className={itemsPageStyles.productDescription}>
           {item.description || `Fresh organic ${item.name.toLowerCase()} sourced locally`}
         </p>
-
         <div className={itemsPageStyles.priceContainer}>
-          <span className={itemsPageStyles.currentPrice}>
-            ₹{item.price.toFixed(2)}
-          </span>
-          <span className={itemsPageStyles.oldPrice}>
-            ₹{(item.price * 1.15).toFixed(2)}
-          </span>
+          <span className={itemsPageStyles.currentPrice}>₹{item.price.toFixed(2)}</span>
+          <span className={itemsPageStyles.oldPrice}>₹{(item.price * 1.15).toFixed(2)}</span>
         </div>
-
         <div className="mt-3">
           {quantity > 0 ? (
             <div className={itemsPageStyles.quantityControls}>
-              <button
-                onClick={handleDecrement}
-                className={`${itemsPageStyles.quantityButton} ${itemsPageStyles.quantityButtonLeft}`}
-              >
-                <FiMinus />
-              </button>
+              <button onClick={handleDecrement} className={`${itemsPageStyles.quantityButton} ${itemsPageStyles.quantityButtonLeft}`}><FiMinus /></button>
               <span className={itemsPageStyles.quantityValue}>{quantity}</span>
-              <button
-                onClick={handleIncrement}
-                className={`${itemsPageStyles.quantityButton} ${itemsPageStyles.quantityButtonRight}`}
-              >
-                <FiPlus />
-              </button>
+              <button onClick={handleIncrement} className={`${itemsPageStyles.quantityButton} ${itemsPageStyles.quantityButtonRight}`}><FiPlus /></button>
             </div>
           ) : (
-            <button
-              onClick={handleAddToCart}
-              className={itemsPageStyles.addButton}
-            >
+            <button onClick={handleAddToCart} className={itemsPageStyles.addButton}>
               <span>Add to Cart</span>
-              <span className={itemsPageStyles.addButtonArrow}>
-                →
-              </span>
+              <span className={itemsPageStyles.addButtonArrow}>→</span>
             </button>
           )}
         </div>
@@ -100,6 +79,7 @@ const Items = () => {
   const [expandedCategories, setExpandedCategories] = useState({});
   const [allExpanded, setAllExpanded] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [data, setData] = useState(groceryData);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -107,43 +87,51 @@ const Items = () => {
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const search = queryParams.get('search');
-    if (search) {
-      setSearchTerm(search);
-    }
+    if (search) setSearchTerm(search);
   }, [location]);
 
-  // Enhanced search function
+  // Fetch from backend and override static data
+  useEffect(() => {
+    axios
+      .get(`${BACKEND_URL}/api/items`)
+      .then(res => {
+        const products = Array.isArray(res.data)
+          ? res.data
+          : res.data.products || [];
+        // group into categories
+        const grouped = products.reduce((acc, item) => {
+          const cat = item.category || 'Uncategorized';
+          if (!acc[cat]) acc[cat] = { id: cat, name: cat, items: [] };
+          acc[cat].items.push(item);
+          return acc;
+        }, {});
+        setData(Object.values(grouped));
+      })
+      .catch(err => console.error('Fetch error:', err));
+  }, []);
+
   const itemMatchesSearch = (item, term) => {
     if (!term) return true;
-
-    // Remove extra spaces and convert to lowercase
     const cleanTerm = term.trim().toLowerCase();
-
-    // Split into individual words
     const searchWords = cleanTerm.split(/\s+/);
-
-    // Check if all search words appear in the item name
-    return searchWords.every(word =>
-      item.name.toLowerCase().includes(word)
-    );
+    return searchWords.every(word => item.name.toLowerCase().includes(word));
   };
 
-  // Filter items based on search term
   const filteredData = searchTerm
-    ? groceryData.map(category => ({
-      ...category,
-      items: category.items.filter(item =>
-        itemMatchesSearch(item, searchTerm))
-    })).filter(category => category.items.length > 0)
-    : groceryData;
+    ? data
+        .map(category => ({
+          ...category,
+          items: category.items.filter(item => itemMatchesSearch(item, searchTerm))
+        }))
+        .filter(category => category.items.length > 0)
+    : data;
 
-  // Clear search handler
   const clearSearch = () => {
     setSearchTerm('');
-    navigate('/items'); // Remove query params
+    navigate('/items');
   };
 
-  const toggleCategory = (categoryId) => {
+  const toggleCategory = categoryId => {
     setExpandedCategories(prev => ({
       ...prev,
       [categoryId]: !prev[categoryId]
@@ -155,7 +143,7 @@ const Items = () => {
       setExpandedCategories({});
     } else {
       const expanded = {};
-      groceryData.forEach(category => {
+      data.forEach(category => {
         expanded[category.id] = true;
       });
       setExpandedCategories(expanded);
@@ -187,23 +175,23 @@ const Items = () => {
 
         {/* Search Bar */}
         <div className={itemsPageStyles.searchContainer}>
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            if (searchTerm.trim()) {
-              navigate(`/items?search=${encodeURIComponent(searchTerm)}`);
-            }
-          }} className={itemsPageStyles.searchForm}>
+          <form
+            onSubmit={e => {
+              e.preventDefault();
+              if (searchTerm.trim()) {
+                navigate(`/items?search=${encodeURIComponent(searchTerm)}`);
+              }
+            }}
+            className={itemsPageStyles.searchForm}
+          >
             <input
               type="text"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               placeholder="Search fruits, vegetables, meats..."
               className={itemsPageStyles.searchInput}
             />
-            <button
-              type="submit"
-              className={itemsPageStyles.searchButton}
-            >
+            <button type="submit" className={itemsPageStyles.searchButton}>
               <FiSearch className="h-5 w-5" />
             </button>
           </form>
@@ -214,28 +202,37 @@ const Items = () => {
             onClick={toggleAllCategories}
             className={itemsPageStyles.expandButton}
           >
-            <span className="mr-2 font-medium">{allExpanded ? 'Collapse All' : 'Expand All'}</span>
-            {allExpanded ? <FiMinus className="text-lg" /> : <FiPlus className="text-lg" />}
+            <span className="mr-2 font-medium">
+              {allExpanded ? 'Collapse All' : 'Expand All'}
+            </span>
+            {allExpanded ? <FiChevronUp /> : <FiChevronDown />}
           </button>
         </div>
 
         {filteredData.length > 0 ? (
           filteredData.map(category => {
             const isExpanded = expandedCategories[category.id] || allExpanded;
-            const visibleItems = isExpanded ? category.items : category.items.slice(0, 4);
+            const visibleItems = isExpanded
+              ? category.items
+              : category.items.slice(0, 4);
             const hasMoreItems = category.items.length > 4;
 
             return (
-              <section key={category.id} className={itemsPageStyles.categorySection}>
+              <section
+                key={category.id}
+                className={itemsPageStyles.categorySection}
+              >
                 <div className={itemsPageStyles.categoryHeader}>
                   <div className={itemsPageStyles.categoryIcon}></div>
-                  <h2 className={itemsPageStyles.categoryTitle}>{category.name}</h2>
+                  <h2 className={itemsPageStyles.categoryTitle}>
+                    {category.name}
+                  </h2>
                   <div className={itemsPageStyles.categoryDivider}></div>
                 </div>
 
                 <div className={itemsPageStyles.productsGrid}>
                   {visibleItems.map(item => (
-                    <ProductCard key={item.id} item={item} />
+                    <ProductCard key={`${category.id}-${item.id}`} item={item} />
                   ))}
                 </div>
 
@@ -248,10 +245,15 @@ const Items = () => {
                       <span className="mr-2 font-medium">
                         {isExpanded
                           ? `Show Less ${category.name}`
-                          : `Show More ${category.name} (${category.items.length - 4}+)`
-                        }
+                          : `Show More ${category.name} (${
+                              category.items.length - 4
+                            }+)`}
                       </span>
-                      {isExpanded ? <FiChevronUp className="text-lg" /> : <FiChevronDown className="text-lg" />}
+                      {isExpanded ? (
+                        <FiChevronUp className="text-lg" />
+                      ) : (
+                        <FiChevronDown className="text-lg" />
+                      )}
                     </button>
                   </div>
                 )}
