@@ -9,6 +9,8 @@ import Cart from './page/Cart';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import Logout from './components/Logout';
+import CheckoutPage from './components/Checkout'
+import MyOrders from './components/OrderPage'
 
 // ScrollToTop component: listens to route changes and scrolls window to top
 const ScrollToTop = () => {
@@ -52,6 +54,8 @@ const App = () => {
             isAuthenticated ? <Cart /> : <Navigate replace to="/login" />
           }
         />
+        <Route path="/checkout" element={<CheckoutPage />} />
+         <Route path="/myorders" element={<MyOrders />} />
 
         {/* Auth routes (always available) */}
         <Route path="/login" element={<Login />} />

@@ -8,6 +8,7 @@ import {
   FiUser,
   FiX,
   FiMenu,
+  FiPackage // Added for My Orders icon
 } from 'react-icons/fi';
 import { FaOpencart } from 'react-icons/fa';
 import { useCart } from '../CartContext';
@@ -89,6 +90,27 @@ export default function Navbar() {
     navigate('/login');
   };
 
+  // Updated nav items with conditional "My Orders" link
+  const getNavItems = () => {
+    const baseItems = [...navItems];
+    
+    // Add "My Orders" after Shop link for logged-in users
+    if (isLoggedIn) {
+      const shopIndex = baseItems.findIndex(item => item.name === "Shop");
+      if (shopIndex !== -1) {
+        baseItems.splice(shopIndex + 1, 0, {
+          name: "My Orders",
+          path: "/myorders",
+          icon: <FiPackage />
+        });
+      }
+    }
+    
+    return baseItems;
+  };
+
+  const updatedNavItems = getNavItems();
+
   return (
     <nav
       className={`
@@ -123,7 +145,7 @@ export default function Navbar() {
 
           {/* Desktop Nav */}
           <div className={navbarStyles.desktopNav}>
-            {navItems.map(item => (
+            {updatedNavItems.map(item => (
               <Link
                 key={item.name}
                 to={item.path}
@@ -248,7 +270,7 @@ export default function Navbar() {
           </div>
 
           <div className={navbarStyles.mobileItemsContainer}>
-            {navItems.map((item, idx) => (
+            {updatedNavItems.map((item, idx) => (
               <Link
                 key={item.name}
                 to={item.path}

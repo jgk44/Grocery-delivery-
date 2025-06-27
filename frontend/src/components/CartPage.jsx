@@ -150,7 +150,13 @@ const Cart = () => {
               </div>
 
               <button className={cartStyles.checkoutButton}>
-                Proceed to Checkout
+          
+<Link 
+  to="/checkout" 
+ 
+>
+  Proceed to Checkout
+</Link>
               </button>
 
               <div className={cartStyles.continueShoppingBottom}>
