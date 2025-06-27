@@ -313,6 +313,28 @@ export const itemsPageStyles = {
   addButtonArrow: "ml-2 text-xl transform group-hover:translate-x-1 transition-transform"
 };
 
+  export const checkoutStyles = {
+    page: "min-h-screen bg-gradient-to-br from-emerald-900 to-emerald-950",
+    container: "container mx-auto px-4 py-8",
+    backLink: "inline-flex items-center text-emerald-300 hover:text-emerald-100 mb-6 transition-colors",
+    header: "mb-8",
+    mainTitle: "text-4xl md:text-5xl font-bold text-emerald-100 mb-2",
+    subtitle: "text-emerald-300 mb-8",
+    card: "bg-emerald-800/50 backdrop-blur-sm rounded-2xl shadow-2xl shadow-emerald-950 p-6 border border-emerald-700",
+    sectionTitle: "text-xl font-bold text-emerald-100 mb-6 flex items-center",
+    input: "w-full px-4 py-3 rounded-xl bg-emerald-900 text-emerald-100 border border-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner",
+    inputError: "border-red-500",
+    radioCard: "flex items-center p-4 border border-emerald-700 rounded-xl cursor-pointer hover:border-emerald-500 transition-colors",
+    cartItem: "flex items-center border-b border-emerald-700/50 pb-4 last:border-0",
+    cartImage: "bg-emerald-800 border-2 border-dashed border-emerald-700 rounded-xl w-16 h-16 mr-4 flex items-center justify-center",
+    summaryCard: "bg-emerald-800/50 border border-emerald-700 rounded-xl p-4",
+    infoCard: "bg-emerald-800/50 border border-emerald-700 rounded-xl p-4",
+    button: "w-full py-3 px-6 rounded-xl font-medium flex items-center justify-center transition-colors shadow-lg shadow-emerald-900/30",
+    submitButton: "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white",
+    disabledButton: "bg-gray-500 cursor-not-allowed",
+    link: "text-emerald-400 hover:text-emerald-200 hover:underline"
+  };
+
  // Styles object matching the requested theme
   export const ordersPageStyles = {
     page: "min-h-screen bg-gradient-to-br from-emerald-900 to-emerald-950",
