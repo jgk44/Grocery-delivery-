@@ -4,22 +4,18 @@ import {
     addToCart,
     updateCartItem,
     deleteCartItem,
-    clearCart,
-} from '../controllers/cartController.js';
+    clearCart
+} from '../controllers/cartController.js'
 import authMiddleware from '../middleware/auth.js';
 
-const router = express.Router();
+const cartRouter = express.Router();
+// protect all cart routes
+cartRouter.use(authMiddleware);
 
-router
-    .route('/')
-    .get(authMiddleware, getCart)
-    .post(authMiddleware, addToCart);
+cartRouter.get('/', getCart);
+cartRouter.post('/', addToCart);
+cartRouter.put('/:id', updateCartItem);
+cartRouter.delete('/:id', deleteCartItem);
+cartRouter.post('/clear', clearCart);
 
-router.post('/clear', authMiddleware, clearCart);
-
-router
-    .route('/:id')
-    .put(authMiddleware, updateCartItem)
-    .delete(authMiddleware, deleteCartItem);
-
-export default router;
+export default cartRouter;

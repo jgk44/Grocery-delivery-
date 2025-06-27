@@ -1,6 +1,5 @@
-// backend/controllers/cartController.js
-
-import { CartItem } from '../models/cartItem.js';
+import { CartItem } from '../models/cartModel.js';
+import createError from 'http-errors';
 
 // GET /api/cart
 export const getCart = async (req, res, next) => {
@@ -9,7 +8,7 @@ export const getCart = async (req, res, next) => {
         const formatted = items.map(ci => ({
             _id: ci._id.toString(),
             item: ci.item,
-            quantity: ci.quantity,
+            quantity: ci.quantity
         }));
         res.json(formatted);
     } catch (err) {
@@ -22,8 +21,7 @@ export const addToCart = async (req, res, next) => {
     try {
         const { itemId, quantity } = req.body;
         if (!itemId || typeof quantity !== 'number') {
-            res.status(400);
-            throw new Error('itemId and quantity (number) are required');
+            throw createError(400, 'itemId and quantity (number) are required');
         }
 
         let cartItem = await CartItem.findOne({ user: req.user._id, item: itemId });
@@ -31,7 +29,7 @@ export const addToCart = async (req, res, next) => {
         if (cartItem) {
             cartItem.quantity = Math.max(1, cartItem.quantity + quantity);
             if (cartItem.quantity < 1) {
-                await cartItem.remove();
+                await cartItem.deleteOne();
                 return res.json({ _id: cartItem._id.toString(), item: cartItem.item, quantity: 0 });
             }
             await cartItem.save();
@@ -39,20 +37,20 @@ export const addToCart = async (req, res, next) => {
             return res.status(200).json({
                 _id: cartItem._id.toString(),
                 item: cartItem.item,
-                quantity: cartItem.quantity,
+                quantity: cartItem.quantity
             });
         }
 
         cartItem = await CartItem.create({
             user: req.user._id,
             item: itemId,
-            quantity,
+            quantity
         });
         await cartItem.populate('item');
         res.status(201).json({
             _id: cartItem._id.toString(),
             item: cartItem.item,
-            quantity: cartItem.quantity,
+            quantity: cartItem.quantity
         });
     } catch (err) {
         next(err);
@@ -65,8 +63,7 @@ export const updateCartItem = async (req, res, next) => {
         const { quantity } = req.body;
         const cartItem = await CartItem.findOne({ _id: req.params.id, user: req.user._id });
         if (!cartItem) {
-            res.status(404);
-            throw new Error('Cart item not found');
+            throw createError(404, 'Cart item not found');
         }
         cartItem.quantity = Math.max(1, quantity);
         await cartItem.save();
@@ -74,7 +71,7 @@ export const updateCartItem = async (req, res, next) => {
         res.json({
             _id: cartItem._id.toString(),
             item: cartItem.item,
-            quantity: cartItem.quantity,
+            quantity: cartItem.quantity
         });
     } catch (err) {
         next(err);
@@ -86,8 +83,7 @@ export const deleteCartItem = async (req, res, next) => {
     try {
         const cartItem = await CartItem.findOne({ _id: req.params.id, user: req.user._id });
         if (!cartItem) {
-            res.status(404);
-            throw new Error('Cart item not found');
+            throw createError(404, 'Cart item not found');
         }
         await cartItem.deleteOne();
         res.json({ _id: req.params.id });
