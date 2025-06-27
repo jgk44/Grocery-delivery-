@@ -1,13 +1,19 @@
+/*
+File: controllers/cart.controller.js
+*/
 import { CartItem } from '../models/cartModel.js';
 import createError from 'http-errors';
 
 // GET /api/cart
 export const getCart = async (req, res, next) => {
     try {
-        const items = await CartItem.find({ user: req.user._id }).populate('item');
+        const items = await CartItem.find({ user: req.user._id }).populate({
+            path: 'product',
+            model: 'Product', 
+        });
         const formatted = items.map(ci => ({
             _id: ci._id.toString(),
-            item: ci.item,
+            product: ci.product,
             quantity: ci.quantity
         }));
         res.json(formatted);
@@ -17,39 +23,46 @@ export const getCart = async (req, res, next) => {
 };
 
 // POST /api/cart
+// POST /api/cart
 export const addToCart = async (req, res, next) => {
     try {
-        const { itemId, quantity } = req.body;
-        if (!itemId || typeof quantity !== 'number') {
-            throw createError(400, 'itemId and quantity (number) are required');
+        const { productId, itemId, quantity } = req.body;
+        const pid = productId || itemId;
+        
+        // Improved validation message
+        if (!pid || typeof quantity !== 'number') {
+            throw createError(400, 'Product identifier (productId or itemId) and quantity (number) are required');
         }
 
-        let cartItem = await CartItem.findOne({ user: req.user._id, item: itemId });
+        // FIX: Use pid instead of productId in query
+        let cartItem = await CartItem.findOne({ user: req.user._id, product: pid });
 
         if (cartItem) {
             cartItem.quantity = Math.max(1, cartItem.quantity + quantity);
             if (cartItem.quantity < 1) {
                 await cartItem.deleteOne();
-                return res.json({ _id: cartItem._id.toString(), item: cartItem.item, quantity: 0 });
+                return res.status(200).json({ message: 'Item removed', _id: cartItem._id.toString() });
             }
             await cartItem.save();
-            await cartItem.populate('item');
+            await cartItem.populate('product');
             return res.status(200).json({
                 _id: cartItem._id.toString(),
-                item: cartItem.item,
+                product: cartItem.product,
                 quantity: cartItem.quantity
             });
         }
 
+        // FIX: Use pid instead of productId in creation
         cartItem = await CartItem.create({
             user: req.user._id,
-            item: itemId,
+            product: pid,
             quantity
         });
-        await cartItem.populate('item');
+        
+        await cartItem.populate('product');
         res.status(201).json({
             _id: cartItem._id.toString(),
-            item: cartItem.item,
+            product: cartItem.product,
             quantity: cartItem.quantity
         });
     } catch (err) {
@@ -67,10 +80,10 @@ export const updateCartItem = async (req, res, next) => {
         }
         cartItem.quantity = Math.max(1, quantity);
         await cartItem.save();
-        await cartItem.populate('item');
+        await cartItem.populate('product');
         res.json({
             _id: cartItem._id.toString(),
-            item: cartItem.item,
+            product: cartItem.product,
             quantity: cartItem.quantity
         });
     } catch (err) {
@@ -86,7 +99,7 @@ export const deleteCartItem = async (req, res, next) => {
             throw createError(404, 'Cart item not found');
         }
         await cartItem.deleteOne();
-        res.json({ _id: req.params.id });
+        res.json({ message: 'Item deleted', _id: req.params.id });
     } catch (err) {
         next(err);
     }

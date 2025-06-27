@@ -1,3 +1,6 @@
+/*
+File: routes/cart.routes.js
+*/
 import express from 'express';
 import {
     getCart,
@@ -5,11 +8,10 @@ import {
     updateCartItem,
     deleteCartItem,
     clearCart
-} from '../controllers/cartController.js'
+} from '../controllers/cartController.js';
 import authMiddleware from '../middleware/auth.js';
 
 const cartRouter = express.Router();
-// protect all cart routes
 cartRouter.use(authMiddleware);
 
 cartRouter.get('/', getCart);
