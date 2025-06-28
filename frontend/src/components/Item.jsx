@@ -12,22 +12,18 @@ const BACKEND_URL = 'http://localhost:4000';
 const ProductCard = ({ item }) => {
   const { addToCart, removeFromCart, updateQuantity, cart } = useCart();
 
-  // Get current quantity in cart
-  const uniqueId = item.id || item._id;
-  const cartItem = cart.find(ci => ci.id === uniqueId);
-  const quantity = cartItem ? cartItem.quantity : 0;
+  const productId = item._id;
+  const cartItem = cart.find(ci => ci.productId === productId);
+  const lineId = cartItem?.id;
+  const quantity = cartItem?.quantity || 0;
 
-  const handleAddToCart = () =>
-  addToCart({ ...item, id: uniqueId, quantity: 1 });
-  const handleIncrement = () =>
-  updateQuantity(uniqueId, quantity + 1);
+  const handleAddToCart = () => addToCart(productId, 1);
+  const handleIncrement = () => updateQuantity(lineId, quantity + 1);
+  const handleDecrement = () => {
+    if (quantity <= 1) removeFromCart(lineId);
+    else updateQuantity(lineId, quantity - 1);
+  };
 
-const handleDecrement = () => {
-  if (quantity <= 1) removeFromCart(uniqueId);
-  else updateQuantity(uniqueId, quantity - 1);
-};
-
-  // resolve image URL
   const rawImage = item.image || item.imageUrl;
   let imgSrc = item.image;
   if (rawImage) {
@@ -75,6 +71,7 @@ const handleDecrement = () => {
   );
 };
 
+
 const Items = () => {
   const [expandedCategories, setExpandedCategories] = useState({});
   const [allExpanded, setAllExpanded] = useState(false);
@@ -119,11 +116,11 @@ const Items = () => {
 
   const filteredData = searchTerm
     ? data
-        .map(category => ({
-          ...category,
-          items: category.items.filter(item => itemMatchesSearch(item, searchTerm))
-        }))
-        .filter(category => category.items.length > 0)
+      .map(category => ({
+        ...category,
+        items: category.items.filter(item => itemMatchesSearch(item, searchTerm))
+      }))
+      .filter(category => category.items.length > 0)
     : data;
 
   const clearSearch = () => {
@@ -232,7 +229,7 @@ const Items = () => {
 
                 <div className={itemsPageStyles.productsGrid}>
                   {visibleItems.map(item => (
-                    <ProductCard key={`${category.id}-${item.id}`} item={item} />
+                    <ProductCard key={`${category.id}-${item._id || item.id || item.name}`} item={item} />
                   ))}
                 </div>
 
@@ -245,9 +242,8 @@ const Items = () => {
                       <span className="mr-2 font-medium">
                         {isExpanded
                           ? `Show Less ${category.name}`
-                          : `Show More ${category.name} (${
-                              category.items.length - 4
-                            }+)`}
+                          : `Show More ${category.name} (${category.items.length - 4
+                          }+)`}
                       </span>
                       {isExpanded ? (
                         <FiChevronUp className="text-lg" />

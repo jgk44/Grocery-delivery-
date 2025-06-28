@@ -10,12 +10,10 @@ import axios from 'axios'
 
 const ItemsHome = () => {
   const [products, setProducts] = useState([]);
-  // 1) Initialize from localStorage (or "All" if nothing is stored)
   const [activeCategory, setActiveCategory] = useState(() =>
     localStorage.getItem("activeCategory") || "All"
   );
 
-  // 2) Whenever activeCategory changes, save it
   useEffect(() => {
     localStorage.setItem("activeCategory", activeCategory);
   }, [activeCategory]);
@@ -25,35 +23,26 @@ const ItemsHome = () => {
       .then(res => {
         const normalized = res.data.map(p => ({
           ...p,
-          id: p._id,            // <- add an `id` alias
+          id: p._id,
         }));
         setProducts(normalized);
       })
       .catch(console.error);
   }, []);
 
-
   const navigate = useNavigate();
   const { cart, addToCart, updateQuantity, removeFromCart } = useCart();
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Enhanced search function
   const productMatchesSearch = (product, term) => {
     if (!term) return true;
-
-    // Remove extra spaces and convert to lowercase
     const cleanTerm = term.trim().toLowerCase();
-
-    // Split into individual words
     const searchWords = cleanTerm.split(/\s+/);
-
-    // Check if all search words appear in the product name
     return searchWords.every(word =>
       product.name.toLowerCase().includes(word)
     );
   };
 
-  // FIXED: Search across ALL products when search term exists
   const searchedProducts = searchTerm
     ? products.filter(product =>
       productMatchesSearch(product, searchTerm))
@@ -62,29 +51,39 @@ const ItemsHome = () => {
       : products.filter((product) => product.category === activeCategory));
 
   const getQuantity = (productId) => {
-    const item = cart.find((ci) => ci.id === productId);
+    const item = cart.find((ci) => ci.productId === productId);
     return item ? item.quantity : 0;
   };
 
-  const handleIncrease = (product) => addToCart(product.id, 1);
-  const handleDecrease = (product) => {
-    const qty = getQuantity(product.id);
-    if (qty > 1) {
-      updateQuantity(product.id, qty - 1);
+  const getLineItemId = (productId) => {
+    const item = cart.find((ci) => ci.productId === productId);
+    return item ? item.id : null;
+  };
+
+  const handleIncrease = (product) => {
+    const lineId = getLineItemId(product._id);
+    if (lineId) {
+      updateQuantity(lineId, getQuantity(product._id) + 1);
+    } else {
+      addToCart(product._id, 1);
     }
-    else removeFromCart(product.id);
+  };
+
+  const handleDecrease = (product) => {
+    const qty = getQuantity(product._id);
+    const lineId = getLineItemId(product._id);
+    if (qty > 1 && lineId) updateQuantity(lineId, qty - 1);
+    else if (lineId) removeFromCart(lineId);
   };
 
   const redirectToItemsPage = () => {
     navigate("/items", { state: { category: activeCategory } });
   };
 
-  // Handle search from banner
   const handleSearch = (term) => {
     setSearchTerm(term);
   };
 
-  // Create sidebar categories with "All Items" as first item
   const sidebarCategories = [
     {
       name: "All Items",
@@ -96,11 +95,9 @@ const ItemsHome = () => {
 
   return (
     <div className={itemsHomeStyles.page}>
-      {/* Banner at the top */}
       <BannerHome onSearch={handleSearch} />
 
       <div className="flex flex-col lg:flex-row flex-1">
-        {/* Sidebar - hidden on small devices */}
         <aside className={itemsHomeStyles.sidebar}>
           <div className={itemsHomeStyles.sidebarHeader}>
             <h1
@@ -122,7 +119,7 @@ const ItemsHome = () => {
                   <button
                     onClick={() => {
                       setActiveCategory(category.value || category.name);
-                      setSearchTerm(''); // Clear search when changing category
+                      setSearchTerm('');
                     }}
                     className={`${itemsHomeStyles.categoryItem} ${(activeCategory === (category.value || category.name)) && !searchTerm
                       ? itemsHomeStyles.activeCategory
@@ -140,9 +137,7 @@ const ItemsHome = () => {
           </div>
         </aside>
 
-        {/* Main Content */}
         <main className={itemsHomeStyles.mainContent}>
-          {/* Mobile Category Scroll */}
           <div className={itemsHomeStyles.mobileCategories}>
             <div className="flex space-x-4">
               {sidebarCategories.map((cat) => (
@@ -150,7 +145,7 @@ const ItemsHome = () => {
                   key={cat.name}
                   onClick={() => {
                     setActiveCategory(cat.value || cat.name);
-                    setSearchTerm(''); // Clear search when changing category
+                    setSearchTerm('');
                   }}
                   className={`${itemsHomeStyles.mobileCategoryItem} ${activeCategory === (cat.value || cat.name) && !searchTerm
                     ? itemsHomeStyles.activeMobileCategory
@@ -163,7 +158,6 @@ const ItemsHome = () => {
             </div>
           </div>
 
-          {/* Search Results Header - Added */}
           {searchTerm && (
             <div className={itemsHomeStyles.searchResults}>
               <div className="flex items-center justify-center">
@@ -180,7 +174,6 @@ const ItemsHome = () => {
             </div>
           )}
 
-          {/* Section Title - Updated to show correct title during search */}
           <div className="text-center mb-6">
             <h2
               className={itemsHomeStyles.sectionTitle}
@@ -196,11 +189,10 @@ const ItemsHome = () => {
             <div className={itemsHomeStyles.sectionDivider} />
           </div>
 
-          {/* Products Grid */}
           <div className={itemsHomeStyles.productsGrid}>
             {searchedProducts.length > 0 ? (
               searchedProducts.map((product) => {
-                const qty = getQuantity(product.id);
+                const qty = getQuantity(product._id);
                 return (
                   <div
                     key={product._id}
@@ -235,7 +227,6 @@ const ItemsHome = () => {
                           </span>
                         </div>
 
-                        {/* Add / Quantity Controls */}
                         {qty === 0 ? (
                           <button
                             onClick={() => handleIncrease(product)}
@@ -281,7 +272,6 @@ const ItemsHome = () => {
             )}
           </div>
 
-          {/* View All Button - Hidden when showing search results */}
           {!searchTerm && (
             <div className="text-center">
               <button
