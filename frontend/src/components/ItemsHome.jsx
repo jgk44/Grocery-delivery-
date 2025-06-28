@@ -31,7 +31,7 @@ const ItemsHome = () => {
       })
       .catch(console.error);
   }, []);
-  
+
 
   const navigate = useNavigate();
   const { cart, addToCart, updateQuantity, removeFromCart } = useCart();
@@ -66,10 +66,12 @@ const ItemsHome = () => {
     return item ? item.quantity : 0;
   };
 
-  const handleIncrease = (product) => addToCart(product, 1);
+  const handleIncrease = (product) => addToCart(product.id, 1);
   const handleDecrease = (product) => {
     const qty = getQuantity(product.id);
-    if (qty > 1) updateQuantity(product.id, qty - 1);
+    if (qty > 1) {
+      updateQuantity(product.id, qty - 1);
+    }
     else removeFromCart(product.id);
   };
 
