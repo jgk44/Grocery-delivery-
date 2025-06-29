@@ -11,6 +11,7 @@ import Signup from './components/Signup';
 import Logout from './components/Logout';
 import CheckoutPage from './components/Checkout'
 import MyOrders from './components/OrderPage'
+import VerifyPaymentPage from './page/VerifyPaymentPage';
 
 // ScrollToTop component: listens to route changes and scrolls window to top
 const ScrollToTop = () => {
@@ -55,6 +56,9 @@ const App = () => {
           }
         />
         <Route path="/checkout" element={<CheckoutPage />} />
+
+        {/* Payment verification */}
+        <Route path="/myorders/verify" element={<VerifyPaymentPage />} />
         <Route path="/myorders" element={<MyOrders />} />
 
         {/* Auth routes (always available) */}
