@@ -5,8 +5,16 @@ import axios from 'axios';
 const CartContext = createContext();
 
 const getAuthHeader = () => {
-  const token = localStorage.getItem('authToken') || localStorage.getItem('token');
-  return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+  // Pull your JWT from wherever you’ve stored it
+  const token =
+    localStorage.getItem('authToken') ||
+    localStorage.getItem('token') ||
+    sessionStorage.getItem('token');
+
+  // Always send it explicitly, even if withCredentials is true
+  return token
+    ? { headers: { Authorization: `Bearer ${token}` } }
+    : {};
 };
 
 const normalizeItems = (rawItems = []) => {
@@ -41,12 +49,18 @@ export const CartProvider = ({ children }) => {
 
   const fetchCart = async () => {
     try {
-      const { data } = await axios.get('http://localhost:4000/api/cart', getAuthHeader());
+      const { data } = await axios.get(
+        'http://localhost:4000/api/cart',
+        {
+          ...getAuthHeader(),
+          withCredentials: true,   // if you’re relying on cookies too
+        }
+      );
       const rawItems = Array.isArray(data)
         ? data
         : Array.isArray(data.items)
-        ? data.items
-        : data.cart?.items || [];
+          ? data.items
+          : data.cart?.items || [];
 
       setCart(normalizeItems(rawItems));
     } catch (err) {
@@ -62,8 +76,8 @@ export const CartProvider = ({ children }) => {
       const rawItems = Array.isArray(data)
         ? data
         : Array.isArray(data.items)
-        ? data.items
-        : data.cart?.items || [];
+          ? data.items
+          : data.cart?.items || [];
       setCart(normalizeItems(rawItems));
     } catch (err) {
       console.error('Error refreshing cart:', err);

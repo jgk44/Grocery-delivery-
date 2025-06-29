@@ -1,35 +1,65 @@
-import React, { useState } from 'react';
-import { 
-  FiCheck, FiX, FiDollarSign, FiTruck, FiPackage, 
+import React, { useEffect, useState } from 'react';
+import {
+  FiX, FiTruck, FiPackage,
   FiCreditCard, FiUser, FiMapPin, FiPhone, FiMail, FiArrowLeft, FiSearch
 } from 'react-icons/fi';
 import { ordersPageStyles } from "../assets/dummyStyles.js";
-import {orders} from "../assets/dummyData.jsx"
+import axios from 'axios';
 
 const UserOrdersPage = () => {
-
+  const [orders, setOrders] = useState([]);
+  const [filteredOrders, setFilteredOrders] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  
-  // Filter orders based on search term
-  const filteredOrders = orders.filter(order => 
-    order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.items.some(item => 
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+
+  // 1) Grab the logged‑in user email from localStorage
+  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+  const userEmail = userData.email || '';
+
+  const fetchAndFilterOrders = async () => {
+    try {
+      // 2) Fetch ALL orders publicly
+      const resp = await axios.get('http://localhost:4000/api/orders');
+      const allOrders = resp.data;
+
+      // 3) Client‑side filter by customer.email
+      const mine = allOrders.filter(o =>
+        o.customer?.email?.toLowerCase() === userEmail.toLowerCase()
+      );
+
+      setOrders(mine);
+    } catch (err) {
+      console.error('Error fetching orders:', err);
+    }
+  };
+
+  // fetch once on mount
+  useEffect(() => {
+    fetchAndFilterOrders();
+  }, []);
+
+  // search filtering
+  useEffect(() => {
+    setFilteredOrders(
+      orders.filter(o =>
+        o.orderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        o.items.some(i =>
+          i.name.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      )
+    );
+  }, [orders, searchTerm]);
 
   const viewOrderDetails = (order) => {
     setSelectedOrder(order);
     setIsDetailModalOpen(true);
   };
-
   const closeModal = () => {
     setIsDetailModalOpen(false);
     setSelectedOrder(null);
   };
-
-
+  
   return (
     <div className={ordersPageStyles.page}>
       <div className={ordersPageStyles.container}>
@@ -92,9 +122,9 @@ const UserOrdersPage = () => {
                   </tr>
                 ) : (
                   filteredOrders.map(order => (
-                    <tr key={order.id} className={ordersPageStyles.tableRow}>
+                    <tr key={order._id} className={ordersPageStyles.tableRow}>
                       <td className={`${ordersPageStyles.tableCell} font-medium text-emerald-200`}>
-                        {order.id}
+                        {order.orderId}
                       </td>
                       <td className={`${ordersPageStyles.tableCell} text-sm`}>
                         {order.date}
@@ -111,12 +141,11 @@ const UserOrdersPage = () => {
                         ${order.total.toFixed(2)}
                       </td>
                       <td className={ordersPageStyles.tableCell}>
-                        <span className={`${ordersPageStyles.statusBadge} ${
-                          order.status === 'Delivered' ? 'bg-emerald-500/20 text-emerald-200' :
+                        <span className={`${ordersPageStyles.statusBadge} ${order.status === 'Delivered' ? 'bg-emerald-500/20 text-emerald-200' :
                           order.status === 'Processing' ? 'bg-amber-500/20 text-amber-200' :
-                          order.status === 'Shipped' ? 'bg-blue-500/20 text-blue-200' :
-                          'bg-red-500/20 text-red-200'
-                        }`}>
+                            order.status === 'Shipped' ? 'bg-blue-500/20 text-blue-200' :
+                              'bg-red-500/20 text-red-200'
+                          }`}>
                           {order.status}
                         </span>
                       </td>
@@ -145,9 +174,9 @@ const UserOrdersPage = () => {
             <div className={ordersPageStyles.modalHeader}>
               <div className="flex justify-between items-center">
                 <h2 className={ordersPageStyles.modalTitle}>
-                  Order Details: {selectedOrder.id}
+                  Order Details: {selectedOrder._id}
                 </h2>
-                <button 
+                <button
                   onClick={closeModal}
                   className={ordersPageStyles.modalCloseButton}
                 >
@@ -155,7 +184,7 @@ const UserOrdersPage = () => {
                 </button>
               </div>
               <p className="text-emerald-300 mt-1">
-                Ordered on {selectedOrder.date} • {selectedOrder.deliveryDate && 
+                Ordered on {selectedOrder.date} • {selectedOrder.deliveryDate &&
                   `Estimated delivery: ${selectedOrder.deliveryDate}`}
               </p>
             </div>
@@ -213,14 +242,14 @@ const UserOrdersPage = () => {
                     </h3>
                     <div className="border border-emerald-700 rounded-xl overflow-hidden">
                       {selectedOrder.items.map((item, index) => (
-                        <div 
-                          key={index} 
+                        <div
+                          key={item._id || idx}
                           className={`flex items-center p-4 bg-emerald-900/30 ${index !== selectedOrder.items.length - 1 ? 'border-b border-emerald-700' : ''}`}
                         >
-                          {item.image ? (
-                            <img 
-                              src={item.image} 
-                              alt={item.name} 
+                          {item.imageUrl ? (
+                            <img
+                              src={`http://localhost:4000${item.imageUrl}`}
+                              alt={item.name}
                               className="w-16 h-16 object-cover rounded-lg mr-4"
                             />
                           ) : (
@@ -237,7 +266,7 @@ const UserOrdersPage = () => {
                           </div>
                         </div>
                       ))}
-                      
+
                       {/* Order Totals */}
                       <div className="p-4 bg-emerald-800/50">
                         <div className="flex justify-between py-2">
@@ -277,10 +306,9 @@ const UserOrdersPage = () => {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-emerald-300">Status:</span>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            selectedOrder.paymentStatus === 'Paid' ? 'bg-emerald-500/20 text-emerald-200' :
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${selectedOrder.paymentStatus === 'Paid' ? 'bg-emerald-500/20 text-emerald-200' :
                             'bg-red-500/20 text-red-200'
-                          }`}>
+                            }`}>
                             {selectedOrder.paymentStatus}
                           </span>
                         </div>
@@ -296,17 +324,16 @@ const UserOrdersPage = () => {
                       <div className={ordersPageStyles.modalCard}>
                         <div className="flex justify-between mb-3">
                           <span className="text-emerald-300">Status:</span>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            selectedOrder.status === 'Delivered' ? 'bg-emerald-500/20 text-emerald-200' :
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${selectedOrder.status === 'Delivered' ? 'bg-emerald-500/20 text-emerald-200' :
                             selectedOrder.status === 'Shipped' ? 'bg-blue-500/20 text-blue-200' :
-                            selectedOrder.status === 'Cancelled' ? 'bg-red-500/20 text-red-200' :
-                            'bg-amber-500/20 text-amber-200'
-                          }`}>
+                              selectedOrder.status === 'Cancelled' ? 'bg-red-500/20 text-red-200' :
+                                'bg-amber-500/20 text-amber-200'
+                            }`}>
                             {selectedOrder.status}
                           </span>
                         </div>
                         <div className="text-emerald-300">
-                          {selectedOrder.deliveryDate && 
+                          {selectedOrder.deliveryDate &&
                             `Estimated delivery: ${selectedOrder.deliveryDate}`}
                         </div>
                       </div>
