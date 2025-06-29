@@ -10,7 +10,7 @@ import authMiddleware from './middleware/auth.js';
 import userRouter from './routes/userRoute.js';
 import itemrouter from './routes/productRoute.js';
 import cartRouter from './routes/cartRoute.js';
-import Orderrouter from './routes/orderRoute.js';
+import orderrouter from './routes/orderRoute.js';
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -44,7 +44,7 @@ app.use("/api/user", userRouter)
 app.use('/api/cart', authMiddleware, cartRouter);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/items', itemrouter)
-app.use('/api/orders', Orderrouter)
+app.use('/api/orders', orderrouter)
 
 app.get('/', (req, res) => {
     res.send('API Working');

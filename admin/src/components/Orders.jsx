@@ -1,60 +1,85 @@
 import React, { useState, useEffect } from 'react';
-import { FiCheck, FiX, FiDollarSign, 
-  FiTruck, FiPackage, FiCreditCard, FiUser, FiMapPin, FiPhone , FiMail, FiEdit } from 'react-icons/fi';
-import initialOrders from '../assets/dummyData' 
+import axios from 'axios';
+import { FiCheck, FiX, FiDollarSign, FiTruck, FiPackage, FiCreditCard, FiUser, FiMapPin, FiPhone, FiMail, FiEdit } from 'react-icons/fi';
 
 const OrdersPage = () => {
-  const [orders, setOrders] = useState(() => {
-    const savedOrders = localStorage.getItem('adminOrders');
-    return savedOrders ? JSON.parse(savedOrders) : initialOrders;
-  });
-  
+  const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
-  const [searchTerm] = useState('');
-  const [statusFilter] = useState('All');
-  const [paymentFilter] = useState('All');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [paymentFilter, setPaymentFilter] = useState('All');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+  const statusOptions = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+
+  // Fetch orders from backend
+  // 🌐 Fetch orders from backend
+  const fetchOrders = async () => {
+    try {
+      const { data } = await axios.get('http://localhost:4000/api/orders');
+      console.log('🖼️ fetched orders:', data);
+      setOrders(data);
+      setFilteredOrders(data);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
 
   // Apply filters
   useEffect(() => {
     let result = [...orders];
-    
+
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      result = result.filter(order => 
+      result = result.filter(order =>
         order.id.toLowerCase().includes(term) ||
         order.customer.name.toLowerCase().includes(term) ||
         order.customer.phone.includes(term) ||
-        order.customer.email && order.customer.email.toLowerCase().includes(term))
+        (order.customer.email && order.customer.email.toLowerCase().includes(term))
+      );
     }
-    
+
     if (statusFilter !== 'All') {
       result = result.filter(order => order.status === statusFilter);
     }
-    
+
     if (paymentFilter !== 'All') {
       result = result.filter(order => order.paymentStatus === paymentFilter);
     }
-    
+
     setFilteredOrders(result);
   }, [orders, searchTerm, statusFilter, paymentFilter]);
 
-  // Save orders to localStorage
-  useEffect(() => {
-    localStorage.setItem('adminOrders', JSON.stringify(orders));
-  }, [orders]);
+  // Update order status on backend
+  // 🌐 Update order status on backend
+  const updateOrderStatus = async (orderId, newStatus) => {
+    try {
+      await axios.put(
+        `http://localhost:4000/api/orders/${orderId}`,
+        { status: newStatus }
+      );
+      setOrders(prev =>
+        prev.map(order =>
+          order._id === orderId ? { ...order, status: newStatus } : order
+        )
+      );
 
-  const statusOptions = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
-  
-
-  const updateOrderStatus = (orderId, newStatus) => {
-    setOrders(prev => 
-      prev.map(order => 
-        order.id === orderId ? { ...order, status: newStatus } : order
-      )
-    );
+      setFilteredOrders(prev =>
+        prev.map(o =>
+          o._id === orderId ? { ...o, status: newStatus } : o
+        )
+      );
+    }
+    catch (error) {
+      console.error('Error updating order status:', error);
+    }
   };
+
 
   const cancelOrder = (orderId) => {
     updateOrderStatus(orderId, 'Cancelled');
@@ -96,7 +121,7 @@ const OrdersPage = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-xl shadow p-6 border-l-4 border-amber-500">
             <div className="flex items-center">
               <div className="bg-amber-100 p-3 rounded-full mr-4">
@@ -110,7 +135,7 @@ const OrdersPage = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-xl shadow p-6 border-l-4 border-emerald-500">
             <div className="flex items-center">
               <div className="bg-emerald-100 p-3 rounded-full mr-4">
@@ -124,7 +149,7 @@ const OrdersPage = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-xl shadow p-6 border-l-4 border-red-500">
             <div className="flex items-center">
               <div className="bg-red-100 p-3 rounded-full mr-4">
@@ -169,9 +194,9 @@ const OrdersPage = () => {
                   </tr>
                 ) : (
                   filteredOrders.map(order => (
-                    <tr key={order.id} className="hover:bg-gray-50">
+                    <tr key={order._id} className="hover:bg-gray-50">
                       <td className="py-4 px-4 font-medium text-emerald-700">
-                        {order.id}
+                        {order.orderId}
                       </td>
                       <td className="py-4 px-4">
                         <div className="font-medium">{order.customer.name}</div>
@@ -187,21 +212,19 @@ const OrdersPage = () => {
                         ₹{order.total.toFixed(2)}
                       </td>
                       <td className="py-4 px-4">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          order.status === 'Delivered' ? 'bg-emerald-100 text-emerald-800' :
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${order.status === 'Delivered' ? 'bg-emerald-100 text-emerald-800' :
                           order.status === 'Processing' || order.status === 'Shipped' ? 'bg-blue-100 text-blue-800' :
-                          order.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
-                          'bg-amber-100 text-amber-800'
-                        }`}>
+                            order.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
+                              'bg-amber-100 text-amber-800'
+                          }`}>
                           {order.status}
                         </span>
                       </td>
                       <td className="py-4 px-4">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          order.paymentStatus === 'Paid' ? 'bg-emerald-100 text-emerald-800' :
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${order.paymentStatus === 'Paid' ? 'bg-emerald-100 text-emerald-800' :
                           order.paymentStatus === 'COD' ? 'bg-blue-100 text-blue-800' :
-                          'bg-red-100 text-red-800'
-                        }`}>
+                            'bg-red-100 text-red-800'
+                          }`}>
                           {order.paymentStatus}
                         </span>
                       </td>
@@ -214,10 +237,9 @@ const OrdersPage = () => {
                             View
                           </button>
                           <button
-                            onClick={() => cancelOrder(order.id)}
-                            className={`text-sm bg-red-100 hover:bg-red-200 text-red-700 py-1 px-3 rounded-full transition-colors ${
-                              order.status === 'Cancelled' || order.status === 'Delivered' ? 'opacity-50 cursor-not-allowed' : ''
-                            }`}
+                            onClick={() => cancelOrder(order._id)}
+                            className={`text-sm bg-red-100 hover:bg-red-200 text-red-700 py-1 px-3 rounded-full transition-colors ${order.status === 'Cancelled' || order.status === 'Delivered' ? 'opacity-50 cursor-not-allowed' : ''
+                              }`}
                             disabled={order.status === 'Cancelled' || order.status === 'Delivered'}
                           >
                             Cancel
@@ -241,9 +263,9 @@ const OrdersPage = () => {
             <div className="sticky top-0 bg-white border-b p-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold text-emerald-800">
-                  Order Details: {selectedOrder.id}
+                  Order Details: {selectedOrder._id}
                 </h2>
-                <button 
+                <button
                   onClick={closeModal}
                   className="text-gray-500 hover:text-gray-700"
                 >
@@ -269,11 +291,11 @@ const OrdersPage = () => {
                     <div className="bg-gray-50 rounded-lg p-4">
                       <div className="mb-3">
                         <div className="font-medium">{selectedOrder.customer.name}</div>
-                       {/* In the Customer Information section of the modal */}
-<div className="text-gray-600 flex items-center mt-1">
-  <FiMail className="mr-2 flex-shrink-0" />
-  {selectedOrder.customer.email || 'No email provided'}
-</div>
+                        {/* In the Customer Information section of the modal */}
+                        <div className="text-gray-600 flex items-center mt-1">
+                          <FiMail className="mr-2 flex-shrink-0" />
+                          {selectedOrder.customer.email || 'No email provided'}
+                        </div>
                         <div className="text-gray-600 flex items-center mt-1">
                           <FiPhone className="mr-2 flex-shrink-0" />
                           {selectedOrder.customer.phone}
@@ -313,8 +335,8 @@ const OrdersPage = () => {
                           value={selectedOrder.status}
                           onChange={(e) => {
                             const newStatus = e.target.value;
-                            setSelectedOrder({...selectedOrder, status: newStatus});
-                            updateOrderStatus(selectedOrder.id, newStatus);
+                            setSelectedOrder({ ...selectedOrder, status: newStatus });
+                            updateOrderStatus(selectedOrder._id, newStatus);  // ← use _id here
                           }}
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                         >
@@ -339,14 +361,14 @@ const OrdersPage = () => {
                     </h3>
                     <div className="border border-gray-200 rounded-lg">
                       {selectedOrder.items.map((item, index) => (
-                        <div 
-                          key={index} 
+                        <div
+                          key={item._id || index}
                           className={`flex items-center p-4 ${index !== selectedOrder.items.length - 1 ? 'border-b' : ''}`}
                         >
-                          {item.image ? (
-                            <img 
-                              src={item.image} 
-                              alt={item.name} 
+                          {item.imageUrl ? (
+                            <img
+                              src={`http://localhost:4000${item.imageUrl}`}
+                              alt={item.name}
                               className="w-16 h-16 object-cover rounded-lg mr-4"
                             />
                           ) : (
@@ -361,7 +383,7 @@ const OrdersPage = () => {
                           </div>
                         </div>
                       ))}
-                      
+
                       {/* Order Totals */}
                       <div className="p-4 bg-gray-50">
                         <div className="flex justify-between py-2">
@@ -399,11 +421,10 @@ const OrdersPage = () => {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Payment Status:</span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          selectedOrder.paymentStatus === 'Paid' ? 'bg-emerald-100 text-emerald-800' :
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${selectedOrder.paymentStatus === 'Paid' ? 'bg-emerald-100 text-emerald-800' :
                           selectedOrder.paymentStatus === 'COD' ? 'bg-blue-100 text-blue-800' :
-                          'bg-red-100 text-red-800'
-                        }`}>
+                            'bg-red-100 text-red-800'
+                          }`}>
                           {selectedOrder.paymentStatus}
                         </span>
                       </div>

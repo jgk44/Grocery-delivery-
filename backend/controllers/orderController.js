@@ -106,82 +106,70 @@ export const confirmPayment = async (req, res) => {
         res.status(500).json({ message: 'Server Error', error: err.message });
     }
 };
-
-// Get orders (user only sees their own, admin sees all)
-export const getOrders = async (req, res) => {
+// GET /api/orders  — public, returns all orders
+export const getOrders = async (req, res, next) => {
     try {
-        let filter = {};
-        if (!req.user.isAdmin) {
-            // regular user: only their orders
-            filter.user = req.user._id;
-        }
-        const orders = await Order.find(filter).sort({ createdAt: -1 });
+        const orders = await Order.find({})
+            .sort({ createdAt: -1 })
+            .lean();
         res.json(orders);
     } catch (err) {
         console.error('getOrders error:', err);
-        res.status(500).json({ message: 'Server Error', error: err.message });
+        next(err);
     }
 };
 
-// Get single order
-export const getOrderById = async (req, res) => {
+// GET /api/orders/:id  — public, returns one order
+export const getOrderById = async (req, res, next) => {
     try {
-        const order = await Order.findById(req.params.id);
-        if (!order) return res.status(404).json({ message: 'Order not found' });
-
-        if (!req.user.isAdmin && order.user.toString() !== req.user._id.toString()) {
-            return res.status(403).json({ message: 'Access denied' });
+        const order = await Order.findById(req.params.id).lean();
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
         }
         res.json(order);
     } catch (err) {
         console.error('getOrderById error:', err);
-        res.status(500).json({ message: 'Server Error', error: err.message });
+        next(err);
     }
 };
 
-// Update order (regular users can only update notes before processing; admins can update any)
-export const updateOrder = async (req, res) => {
+// PUT /api/orders/:id  — public, updates allowed fields
+export const updateOrder = async (req, res, next) => {
     try {
-        const order = await Order.findById(req.params.id);
-        if (!order) return res.status(404).json({ message: 'Order not found' });
-
-        // regular user: only update their own and only notes/status before shipped
-        if (!req.user.isAdmin) {
-            if (order.user.toString() !== req.user._id.toString()) {
-                return res.status(403).json({ message: 'Access denied' });
+        const allowed = ['status', 'paymentStatus', 'deliveryDate', 'notes'];
+        const updateData = {};
+        allowed.forEach(field => {
+            if (req.body[field] !== undefined) {
+                updateData[field] = req.body[field];
             }
-            // allow only certain fields
-            const allowed = ['notes'];
-            allowed.forEach(f => {
-                if (req.body[f] !== undefined) order[f] = req.body[f];
-            });
-            await order.save();
-            return res.json(order);
-        }
-
-        // admin: full update
-        const updated = await Order.findByIdAndUpdate(req.params.id, req.body, {
-            new: true,
-            runValidators: true
         });
+
+        const updated = await Order.findByIdAndUpdate(
+            req.params.id,
+            updateData,
+            { new: true, runValidators: true }
+        ).lean();
+
+        if (!updated) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
         res.json(updated);
     } catch (err) {
         console.error('updateOrder error:', err);
-        res.status(500).json({ message: 'Server Error', error: err.message });
+        next(err);
     }
 };
 
-// Delete order (admin only)
-export const deleteOrder = async (req, res) => {
+// DELETE /api/orders/:id  — public, deletes the order
+export const deleteOrder = async (req, res, next) => {
     try {
-        if (!req.user.isAdmin) {
-            return res.status(403).json({ message: 'Access denied' });
+        const deleted = await Order.findByIdAndDelete(req.params.id).lean();
+        if (!deleted) {
+            return res.status(404).json({ message: 'Order not found' });
         }
-        const deleted = await Order.findByIdAndDelete(req.params.id);
-        if (!deleted) return res.status(404).json({ message: 'Order not found' });
         res.json({ message: 'Order deleted successfully' });
     } catch (err) {
         console.error('deleteOrder error:', err);
-        res.status(500).json({ message: 'Server Error', error: err.message });
+        next(err);
     }
 };

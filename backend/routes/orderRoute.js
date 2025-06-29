@@ -9,16 +9,16 @@ import {
 } from '../controllers/orderController.js';
 import authMiddleware from '../middleware/auth.js';
 
-const Orderrouter = express.Router();
+const orderrouter = express.Router();
 
 // 🎯 Protected endpoints
-Orderrouter.post('/', authMiddleware, createOrder);
-Orderrouter.get('/confirm', authMiddleware, confirmPayment);
+orderrouter.post('/', authMiddleware, createOrder);
+orderrouter.get('/confirm', authMiddleware, confirmPayment);
 
 // 🌐 Public endpoints
-Orderrouter.get('/', getOrders);
-Orderrouter.get('/:id', getOrderById);
-Orderrouter.put('/:id', updateOrder);
-Orderrouter.delete('/:id', deleteOrder);
+orderrouter.get('/', getOrders);
+orderrouter.get('/:id', getOrderById);
+orderrouter.put('/:id', updateOrder);
+orderrouter.delete('/:id', deleteOrder);
 
-export default Orderrouter;
+export default orderrouter
