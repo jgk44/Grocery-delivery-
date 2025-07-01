@@ -41,7 +41,7 @@ const AdminNavbar = () => {
               }
             >
               <FiPlusCircle className="mr-2" />
-              Manage Products
+              Add Products
             </NavLink>
             
             <NavLink 
@@ -55,7 +55,7 @@ const AdminNavbar = () => {
               }
             >
               <FiPackage className="mr-2" />
-              Inventory
+              List Items
             </NavLink>
             
             <NavLink 

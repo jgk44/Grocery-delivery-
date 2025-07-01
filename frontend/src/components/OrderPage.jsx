@@ -133,9 +133,7 @@ const UserOrdersPage = () => {
                         <div className="text-emerald-100">
                           {order.items.length} items
                         </div>
-                        <div className="text-sm text-emerald-300 truncate max-w-xs">
-                          {order.items.map(item => item.name).join(', ')}
-                        </div>
+                      
                       </td>
                       <td className={`${ordersPageStyles.tableCell} font-medium`}>
                         ${order.total.toFixed(2)}
@@ -184,8 +182,7 @@ const UserOrdersPage = () => {
                 </button>
               </div>
               <p className="text-emerald-300 mt-1">
-                Ordered on {selectedOrder.date} • {selectedOrder.deliveryDate &&
-                  `Estimated delivery: ${selectedOrder.deliveryDate}`}
+                Ordered on {selectedOrder.date} 
               </p>
             </div>
 
@@ -198,7 +195,7 @@ const UserOrdersPage = () => {
                   <div className={ordersPageStyles.modalSection}>
                     <h3 className={ordersPageStyles.modalSectionTitle}>
                       <FiUser className="mr-2 text-emerald-300" />
-                      Customer Information
+                      My Information
                     </h3>
                     <div className={ordersPageStyles.modalCard}>
                       <div className="mb-3">
@@ -332,10 +329,7 @@ const UserOrdersPage = () => {
                             {selectedOrder.status}
                           </span>
                         </div>
-                        <div className="text-emerald-300">
-                          {selectedOrder.deliveryDate &&
-                            `Estimated delivery: ${selectedOrder.deliveryDate}`}
-                        </div>
+                     
                       </div>
                     </div>
                   </div>

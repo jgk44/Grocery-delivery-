@@ -7,6 +7,7 @@ import {
   FiEdit,
   FiTrash2,
   FiPackage,
+  FiFilter,
 } from 'react-icons/fi';
 
 const StatsCard = ({ icon: Icon, color, border, label, value }) => (
@@ -25,16 +26,17 @@ const StatsCard = ({ icon: Icon, color, border, label, value }) => (
 
 export default function ListItemsPage() {
   const [items, setItems] = useState([]);
+  const [filteredItems, setFilteredItems] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('All');
 
-  // Fetch once
+  // Fetch items and extract categories
   useEffect(() => {
     const loadItems = async () => {
       try {
         const response = await axios.get('http://localhost:4000/api/items');
         const data = response.data;
 
-        // Your server is returning `imageUrl` as "/uploads/…"
-        // prefix with host so the browser can load it
         const withUrls = data.map(item => ({
           ...item,
           imageUrl: item.imageUrl
@@ -42,10 +44,14 @@ export default function ListItemsPage() {
             : null,
         }));
 
-        console.log('loaded items:', withUrls);
+        // Extract unique categories
+        const itemCategories = data.map(item => item.category);
+        const uniqueCategories = ['All', ...new Set(itemCategories)];
+        
+        setCategories(uniqueCategories);
         setItems(withUrls);
+        setFilteredItems(withUrls);
       } catch (err) {
-        // use err, not res
         console.error('Failed to load items:', err);
         alert('Could not load products. See console for details.');
       }
@@ -54,12 +60,22 @@ export default function ListItemsPage() {
     loadItems();
   }, []);
 
+  // Filter items when category changes
+  useEffect(() => {
+    if (selectedCategory === 'All') {
+      setFilteredItems(items);
+    } else {
+      setFilteredItems(items.filter(item => item.category === selectedCategory));
+    }
+  }, [selectedCategory, items]);
+
   const handleDelete = async id => {
     if (!window.confirm('Delete this product?')) return;
   
     try {
       await axios.delete(`http://localhost:4000/api/items/${id}`);
       setItems(prev => prev.filter(i => i._id !== id));
+      setFilteredItems(prev => prev.filter(i => i._id !== id));
     } catch (err) {
       console.error('Delete failed', err.response?.status, err.response?.data);
       alert(`Delete failed: ${err.response?.data?.message || err.message}`);
@@ -87,19 +103,38 @@ export default function ListItemsPage() {
         </div>
 
         <div className="bg-white rounded-xl shadow-lg p-6">
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
             <h2 className="text-xl font-bold text-emerald-800">
-              All Products ({items.length})
+              Products ({filteredItems.length})
+              {selectedCategory !== 'All' && ` in ${selectedCategory}`}
             </h2>
-            <button
-              className="flex items-center bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-lg"
-              onClick={() => (window.location.href = '/admin/add-item')}
-            >
-              <FiPlus className="mr-2" /> Add New
-            </button>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <FiFilter className="text-gray-400" />
+                </div>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full pl-10 pr-8 py-2.5 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 appearance-none"
+                >
+                  {categories.map(category => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                  <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                  </svg>
+                </div>
+              </div>
+           
+            </div>
           </div>
 
-          {items.length === 0 ? (
+          {filteredItems.length === 0 ? (
             <div className="text-center py-12">
               <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                 <FiPackage className="text-gray-500 text-2xl" />
@@ -107,7 +142,11 @@ export default function ListItemsPage() {
               <h3 className="text-lg font-medium text-gray-900 mb-1">
                 No products found
               </h3>
-              <p className="text-gray-500">Try adding a new product.</p>
+              <p className="text-gray-500">
+                {selectedCategory === 'All'
+                  ? 'Try adding a new product.'
+                  : `No products in ${selectedCategory} category.`}
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -129,7 +168,7 @@ export default function ListItemsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {items.map(item => (
+                  {filteredItems.map(item => (
                     <tr key={item._id} className="hover:bg-gray-50">
                       <td className="py-4 px-4">
                         <div className="flex items-center">

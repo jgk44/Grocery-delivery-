@@ -273,7 +273,7 @@ const OrdersPage = () => {
                 </button>
               </div>
               <p className="text-gray-600 mt-1">
-                Ordered on {selectedOrder.date} • Delivery scheduled for {selectedOrder.deliveryDate}
+                Ordered on {selectedOrder.date} 
               </p>
             </div>
 
