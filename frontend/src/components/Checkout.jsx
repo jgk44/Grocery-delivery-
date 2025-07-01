@@ -1,13 +1,7 @@
+// src/pages/CheckoutPage.jsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import {
-  FiArrowLeft,
-  FiCheck,
-  FiCreditCard,
-  FiTruck,
-  FiUser,
-  FiPackage
-} from 'react-icons/fi';
+import { FiArrowLeft, FiCheck, FiCreditCard, FiTruck, FiUser, FiPackage } from 'react-icons/fi';
 import { useCart } from '../CartContext';
 import { checkoutStyles } from '../assets/dummyStyles';
 import axios from 'axios';
@@ -64,7 +58,6 @@ const CheckoutPage = () => {
       })),
       total: getCartTotal(),
       status: 'Pending',
-      // send the code 'COD' or 'Online', backend will normalize
       paymentMethod: formData.paymentMethod,
       paymentStatus: formData.paymentMethod === 'COD' ? 'Paid' : 'Unpaid',
       deliveryDate: new Date(
@@ -86,7 +79,6 @@ const CheckoutPage = () => {
         }
       );
 
-      // If Stripe Checkout session exists, redirect into it
       if (res.data.checkoutUrl) {
         window.location.href = res.data.checkoutUrl;
         return;
@@ -115,16 +107,16 @@ const CheckoutPage = () => {
 
   if (!cart.length) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-900 to-emerald-950 p-4">
-        <div className="max-w-md w-full bg-emerald-800/50 backdrop-blur-sm rounded-2xl shadow-2xl shadow-emerald-950 p-8 text-center border border-emerald-700">
-          <div className="text-emerald-400 text-6xl mb-4">🛒</div>
-          <h1 className="text-2xl font-bold text-emerald-100 mb-2">Your Cart is Empty</h1>
-          <p className="text-emerald-300 mb-6">
+      <div className={checkoutStyles.emptyPage}>
+        <div className={checkoutStyles.emptyCard}>
+          <div className={checkoutStyles.emptyIcon}>🛒</div>
+          <h1 className={checkoutStyles.emptyTitle}>Your Cart is Empty</h1>
+          <p className={checkoutStyles.emptyText}>
             You don't have any items to checkout.
           </p>
           <Link
             to="/items"
-            className="inline-flex items-center bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-medium py-2 px-6 rounded-full transition-colors shadow-lg shadow-emerald-900/30"
+            className={checkoutStyles.emptyButton}
           >
             <FiArrowLeft className="mr-2" /> Browse Products
           </Link>
@@ -166,8 +158,7 @@ const CheckoutPage = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className={`${checkoutStyles.input} ${errors.name ? checkoutStyles.inputError : ''
-                    }`}
+                  className={`${checkoutStyles.input} ${errors.name ? checkoutStyles.inputError : ''}`}
                   placeholder="Enter your full name"
                 />
                 {errors.name && (
@@ -185,8 +176,7 @@ const CheckoutPage = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className={`${checkoutStyles.input} ${errors.email ? checkoutStyles.inputError : ''
-                      }`}
+                    className={`${checkoutStyles.input} ${errors.email ? checkoutStyles.inputError : ''}`}
                     placeholder="you@example.com"
                   />
                   {errors.email && (
@@ -202,8 +192,7 @@ const CheckoutPage = () => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className={`${checkoutStyles.input} ${errors.phone ? checkoutStyles.inputError : ''
-                      }`}
+                    className={`${checkoutStyles.input} ${errors.phone ? checkoutStyles.inputError : ''}`}
                     placeholder="10-digit phone number"
                   />
                   {errors.phone && (
@@ -221,8 +210,7 @@ const CheckoutPage = () => {
                   value={formData.address}
                   onChange={handleChange}
                   rows="3"
-                  className={`${checkoutStyles.input} ${errors.address ? checkoutStyles.inputError : ''
-                    }`}
+                  className={`${checkoutStyles.input} ${errors.address ? checkoutStyles.inputError : ''}`}
                   placeholder="Full address including landmark"
                 ></textarea>
                 {errors.address && (
@@ -387,12 +375,12 @@ const CheckoutPage = () => {
           </div>
         </div>
 
-        <div className="mt-8 p-6 bg-amber-500/20 rounded-2xl border border-amber-500/30 backdrop-blur-sm">
-          <h3 className="font-bold text-amber-200 flex items-center mb-2">
+        <div className={checkoutStyles.deliveryInfo}>
+          <h3 className={checkoutStyles.deliveryTitle}>
             <FiTruck className="mr-2" />
             Delivery Information
           </h3>
-          <p className="text-amber-100">
+          <p className={checkoutStyles.deliveryText}>
             We deliver within 30-45 minutes. Orders placed after 9 PM will be
             delivered the next morning.
           </p>
