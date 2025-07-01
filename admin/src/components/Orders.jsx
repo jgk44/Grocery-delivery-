@@ -1,6 +1,8 @@
+// src/pages/admin/OrdersPage.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FiCheck, FiX, FiDollarSign, FiTruck, FiPackage, FiCreditCard, FiUser, FiMapPin, FiPhone, FiMail, FiEdit } from 'react-icons/fi';
+import { ordersPageStyles as styles } from '../assets/adminStyles';
 
 const OrdersPage = () => {
   const [orders, setOrders] = useState([]);
@@ -13,12 +15,9 @@ const OrdersPage = () => {
 
   const statusOptions = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
 
-  // Fetch orders from backend
-  // 🌐 Fetch orders from backend
   const fetchOrders = async () => {
     try {
       const { data } = await axios.get('http://localhost:4000/api/orders');
-      console.log('🖼️ fetched orders:', data);
       setOrders(data);
       setFilteredOrders(data);
     } catch (error) {
@@ -30,7 +29,6 @@ const OrdersPage = () => {
     fetchOrders();
   }, []);
 
-  // Apply filters
   useEffect(() => {
     let result = [...orders];
 
@@ -40,8 +38,7 @@ const OrdersPage = () => {
         order.id.toLowerCase().includes(term) ||
         order.customer.name.toLowerCase().includes(term) ||
         order.customer.phone.includes(term) ||
-        (order.customer.email && order.customer.email.toLowerCase().includes(term))
-      );
+        (order.customer.email && order.customer.email.toLowerCase().includes(term)))
     }
 
     if (statusFilter !== 'All') {
@@ -55,8 +52,6 @@ const OrdersPage = () => {
     setFilteredOrders(result);
   }, [orders, searchTerm, statusFilter, paymentFilter]);
 
-  // Update order status on backend
-  // 🌐 Update order status on backend
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
       await axios.put(
@@ -80,7 +75,6 @@ const OrdersPage = () => {
     }
   };
 
-
   const cancelOrder = (orderId) => {
     updateOrderStatus(orderId, 'Cancelled');
   };
@@ -96,68 +90,66 @@ const OrdersPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8">
-      <div className="max-w-6xl mx-auto">
+    <div className={styles.pageContainer}>
+      <div className={styles.innerContainer}>
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-emerald-800 mb-2">
-            Order Management
-          </h1>
-          <p className="text-gray-600">
+        <div className={styles.headerContainer}>
+          <h1 className={styles.headerTitle}>Order Management</h1>
+          <p className={styles.headerSubtitle}>
             View, manage, and track customer orders
           </p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-xl shadow p-6 border-l-4 border-blue-500">
-            <div className="flex items-center">
-              <div className="bg-blue-100 p-3 rounded-full mr-4">
-                <FiPackage className="text-blue-600 text-xl" />
+        <div className={styles.statsGrid}>
+          <div className={styles.statsCard('border-blue-500')}>
+            <div className={styles.statsCardInner}>
+              <div className={styles.statsCardIconContainer('bg-blue-100')}>
+                <FiPackage className={styles.statsCardIcon('text-blue-600')} />
               </div>
               <div>
-                <p className="text-gray-500 text-sm">Total Orders</p>
-                <p className="text-2xl font-bold">{orders.length}</p>
+                <p className={styles.statsCardLabel}>Total Orders</p>
+                <p className={styles.statsCardValue}>{orders.length}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow p-6 border-l-4 border-amber-500">
-            <div className="flex items-center">
-              <div className="bg-amber-100 p-3 rounded-full mr-4">
-                <FiTruck className="text-amber-600 text-xl" />
+          <div className={styles.statsCard('border-amber-500')}>
+            <div className={styles.statsCardInner}>
+              <div className={styles.statsCardIconContainer('bg-amber-100')}>
+                <FiTruck className={styles.statsCardIcon('text-amber-600')} />
               </div>
               <div>
-                <p className="text-gray-500 text-sm">Processing</p>
-                <p className="text-2xl font-bold">
+                <p className={styles.statsCardLabel}>Processing</p>
+                <p className={styles.statsCardValue}>
                   {orders.filter(o => o.status === 'Processing').length}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow p-6 border-l-4 border-emerald-500">
-            <div className="flex items-center">
-              <div className="bg-emerald-100 p-3 rounded-full mr-4">
-                <FiCheck className="text-emerald-600 text-xl" />
+          <div className={styles.statsCard('border-emerald-500')}>
+            <div className={styles.statsCardInner}>
+              <div className={styles.statsCardIconContainer('bg-emerald-100')}>
+                <FiCheck className={styles.statsCardIcon('text-emerald-600')} />
               </div>
               <div>
-                <p className="text-gray-500 text-sm">Delivered</p>
-                <p className="text-2xl font-bold">
+                <p className={styles.statsCardLabel}>Delivered</p>
+                <p className={styles.statsCardValue}>
                   {orders.filter(o => o.status === 'Delivered').length}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow p-6 border-l-4 border-red-500">
-            <div className="flex items-center">
-              <div className="bg-red-100 p-3 rounded-full mr-4">
-                <FiDollarSign className="text-red-600 text-xl" />
+          <div className={styles.statsCard('border-red-500')}>
+            <div className={styles.statsCardInner}>
+              <div className={styles.statsCardIconContainer('bg-red-100')}>
+                <FiDollarSign className={styles.statsCardIcon('text-red-600')} />
               </div>
               <div>
-                <p className="text-gray-500 text-sm">Pending Payment</p>
-                <p className="text-2xl font-bold">
+                <p className={styles.statsCardLabel}>Pending Payment</p>
+                <p className={styles.statsCardValue}>
                   {orders.filter(o => o.paymentStatus === 'Unpaid').length}
                 </p>
               </div>
@@ -166,80 +158,72 @@ const OrdersPage = () => {
         </div>
 
         {/* Orders Table */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className={styles.contentContainer}>
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
+            <table className={styles.table}>
+              <thead className={styles.tableHead}>
                 <tr>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-500">Order ID</th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-500">Customer</th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-500">Date</th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-500">Items</th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-500">Total</th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-500">Status</th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-500">Payment</th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-500">Actions</th>
+                  <th className={styles.tableHeaderCell}>Order ID</th>
+                  <th className={styles.tableHeaderCell}>Customer</th>
+                  <th className={styles.tableHeaderCell}>Date</th>
+                  <th className={styles.tableHeaderCell}>Items</th>
+                  <th className={styles.tableHeaderCell}>Total</th>
+                  <th className={styles.tableHeaderCell}>Status</th>
+                  <th className={styles.tableHeaderCell}>Payment</th>
+                  <th className={styles.tableHeaderCell}>Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className={styles.tableBody}>
                 {filteredOrders.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="py-8 text-center">
-                      <div className="flex flex-col items-center justify-center">
-                        <FiPackage className="text-gray-400 text-4xl mb-4" />
-                        <h3 className="text-lg font-medium text-gray-900 mb-1">No orders found</h3>
-                        <p className="text-gray-500">Try changing your filters</p>
+                    <td colSpan="8" className={styles.emptyStateCell}>
+                      <div className={styles.emptyStateContainer}>
+                        <FiPackage className={styles.emptyStateIcon} />
+                        <h3 className={styles.emptyStateTitle}>No orders found</h3>
+                        <p className={styles.emptyStateText}>Try changing your filters</p>
                       </div>
                     </td>
                   </tr>
                 ) : (
                   filteredOrders.map(order => (
-                    <tr key={order._id} className="hover:bg-gray-50">
-                      <td className="py-4 px-4 font-medium text-emerald-700">
+                    <tr key={order._id} className={styles.tableRowHover}>
+                      <td className={`${styles.tableDataCell} ${styles.orderId}`}>
                         {order.orderId}
                       </td>
-                      <td className="py-4 px-4">
+                      <td className={styles.tableDataCell}>
                         <div className="font-medium">{order.customer.name}</div>
                         <div className="text-sm text-gray-500">{order.customer.phone}</div>
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-500">
+                      <td className={`${styles.tableDataCell} text-sm text-gray-500`}>
                         {order.date}
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-500">
+                      <td className={`${styles.tableDataCell} text-sm text-gray-500`}>
                         {order.items.length} items
                       </td>
-                      <td className="py-4 px-4 font-medium">
+                      <td className={`${styles.tableDataCell} font-medium`}>
                         ₹{order.total.toFixed(2)}
                       </td>
-                      <td className="py-4 px-4">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${order.status === 'Delivered' ? 'bg-emerald-100 text-emerald-800' :
-                          order.status === 'Processing' || order.status === 'Shipped' ? 'bg-blue-100 text-blue-800' :
-                            order.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
-                              'bg-amber-100 text-amber-800'
-                          }`}>
+                      <td className={styles.tableDataCell}>
+                        <span className={styles.statusBadge(order.status)}>
                           {order.status}
                         </span>
                       </td>
-                      <td className="py-4 px-4">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${order.paymentStatus === 'Paid' ? 'bg-emerald-100 text-emerald-800' :
-                          order.paymentStatus === 'COD' ? 'bg-blue-100 text-blue-800' :
-                            'bg-red-100 text-red-800'
-                          }`}>
+                      <td className={styles.tableDataCell}>
+                        <span className={styles.paymentBadge(order.paymentStatus)}>
                           {order.paymentStatus}
                         </span>
                       </td>
-                      <td className="py-4 px-4">
-                        <div className="flex space-x-2">
+                      <td className={styles.tableDataCell}>
+                        <div className={styles.actionButtons}>
                           <button
                             onClick={() => viewOrderDetails(order)}
-                            className="text-sm bg-emerald-100 hover:bg-emerald-200 text-emerald-700 py-1 px-3 rounded-full transition-colors"
+                            className={styles.viewButton}
                           >
                             View
                           </button>
                           <button
                             onClick={() => cancelOrder(order._id)}
-                            className={`text-sm bg-red-100 hover:bg-red-200 text-red-700 py-1 px-3 rounded-full transition-colors ${order.status === 'Cancelled' || order.status === 'Delivered' ? 'opacity-50 cursor-not-allowed' : ''
-                              }`}
+                            className={styles.cancelButton(order.status === 'Cancelled' || order.status === 'Delivered')}
                             disabled={order.status === 'Cancelled' || order.status === 'Delivered'}
                           >
                             Cancel
@@ -257,17 +241,17 @@ const OrdersPage = () => {
 
       {/* Order Detail Modal */}
       {isDetailModalOpen && selectedOrder && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContainer}>
             {/* Modal Header */}
-            <div className="sticky top-0 bg-white border-b p-6">
+            <div className={styles.modalHeader}>
               <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-emerald-800">
+                <h2 className={styles.modalHeaderTitle}>
                   Order Details: {selectedOrder._id}
                 </h2>
                 <button
                   onClick={closeModal}
-                  className="text-gray-500 hover:text-gray-700"
+                  className={styles.modalHeaderClose}
                 >
                   <FiX size={24} />
                 </button>
@@ -278,20 +262,19 @@ const OrdersPage = () => {
             </div>
 
             {/* Modal Body */}
-            <div className="p-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className={styles.modalBody}>
+              <div className={styles.modalGrid}>
                 {/* Left Column */}
                 <div>
                   {/* Customer Info */}
-                  <div className="mb-8">
-                    <h3 className="text-lg font-bold text-emerald-800 mb-4 flex items-center">
-                      <FiUser className="mr-2" />
+                  <div className={styles.modalSection}>
+                    <h3 className={styles.modalSectionTitle}>
+                      <FiUser className={styles.modalIcon} />
                       Customer Information
                     </h3>
-                    <div className="bg-gray-50 rounded-lg p-4">
+                    <div className={styles.modalInfoBox}>
                       <div className="mb-3">
                         <div className="font-medium">{selectedOrder.customer.name}</div>
-                        {/* In the Customer Information section of the modal */}
                         <div className="text-gray-600 flex items-center mt-1">
                           <FiMail className="mr-2 flex-shrink-0" />
                           {selectedOrder.customer.email || 'No email provided'}
@@ -310,23 +293,23 @@ const OrdersPage = () => {
 
                   {/* Order Notes */}
                   {selectedOrder.notes && (
-                    <div className="mb-8">
-                      <h3 className="text-lg font-bold text-emerald-800 mb-4 flex items-center">
-                        <FiEdit className="mr-2" />
+                    <div className={styles.modalSection}>
+                      <h3 className={styles.modalSectionTitle}>
+                        <FiEdit className={styles.modalIcon} />
                         Delivery Notes
                       </h3>
-                      <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                      <div className={styles.modalNoteBox}>
                         <p className="text-gray-700">{selectedOrder.notes}</p>
                       </div>
                     </div>
                   )}
 
                   {/* Status Controls */}
-                  <div className="mb-8">
-                    <h3 className="text-lg font-bold text-emerald-800 mb-4">
+                  <div className={styles.modalSection}>
+                    <h3 className={styles.modalSectionTitle}>
                       Update Order Status
                     </h3>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className={styles.modalStatusControl}>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Order Status
@@ -336,9 +319,9 @@ const OrdersPage = () => {
                           onChange={(e) => {
                             const newStatus = e.target.value;
                             setSelectedOrder({ ...selectedOrder, status: newStatus });
-                            updateOrderStatus(selectedOrder._id, newStatus);  // ← use _id here
+                            updateOrderStatus(selectedOrder._id, newStatus);
                           }}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                          className={styles.modalSelect}
                         >
                           {statusOptions.filter(o => o !== 'All').map(option => (
                             <option key={option} value={option}>
@@ -354,25 +337,25 @@ const OrdersPage = () => {
                 {/* Right Column */}
                 <div>
                   {/* Order Summary */}
-                  <div className="mb-8">
-                    <h3 className="text-lg font-bold text-emerald-800 mb-4 flex items-center">
-                      <FiPackage className="mr-2" />
+                  <div className={styles.modalSection}>
+                    <h3 className={styles.modalSectionTitle}>
+                      <FiPackage className={styles.modalIcon} />
                       Order Summary
                     </h3>
-                    <div className="border border-gray-200 rounded-lg">
+                    <div className={styles.modalOrderSummary}>
                       {selectedOrder.items.map((item, index) => (
                         <div
                           key={item._id || index}
-                          className={`flex items-center p-4 ${index !== selectedOrder.items.length - 1 ? 'border-b' : ''}`}
+                          className={styles.modalOrderItem(index, selectedOrder.items.length)}
                         >
                           {item.imageUrl ? (
                             <img
                               src={`http://localhost:4000${item.imageUrl}`}
                               alt={item.name}
-                              className="w-16 h-16 object-cover rounded-lg mr-4"
+                              className={styles.modalOrderImage}
                             />
                           ) : (
-                            <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16 mr-4" />
+                            <div className={styles.modalPlaceholderImage} />
                           )}
                           <div className="flex-grow">
                             <div className="font-medium">{item.name}</div>
@@ -385,20 +368,20 @@ const OrdersPage = () => {
                       ))}
 
                       {/* Order Totals */}
-                      <div className="p-4 bg-gray-50">
-                        <div className="flex justify-between py-2">
+                      <div className={styles.modalOrderTotalSection}>
+                        <div className={styles.modalOrderTotalRow}>
                           <span className="text-gray-600">Subtotal</span>
                           <span className="font-medium">₹{selectedOrder.total.toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between py-2">
+                        <div className={styles.modalOrderTotalRow}>
                           <span className="text-gray-600">Shipping</span>
                           <span className="font-medium text-emerald-600">Free</span>
                         </div>
-                        <div className="flex justify-between py-2">
+                        <div className={styles.modalOrderTotalRow}>
                           <span className="text-gray-600">Tax (5%)</span>
                           <span className="font-medium">₹{(selectedOrder.total * 0.05).toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between pt-4 mt-2 border-t border-gray-200">
+                        <div className={styles.modalOrderTotalRowLast}>
                           <span className="text-lg font-bold">Total</span>
                           <span className="text-lg font-bold text-emerald-700">
                             ₹{(selectedOrder.total * 1.05).toFixed(2)}
@@ -410,21 +393,18 @@ const OrdersPage = () => {
 
                   {/* Payment Info */}
                   <div>
-                    <h3 className="text-lg font-bold text-emerald-800 mb-4 flex items-center">
-                      <FiCreditCard className="mr-2" />
+                    <h3 className={styles.modalSectionTitle}>
+                      <FiCreditCard className={styles.modalIcon} />
                       Payment Information
                     </h3>
-                    <div className="bg-gray-50 rounded-lg p-4">
+                    <div className={styles.modalInfoBox}>
                       <div className="flex justify-between mb-3">
                         <span className="text-gray-600">Payment Method:</span>
                         <span className="font-medium">{selectedOrder.paymentMethod}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Payment Status:</span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${selectedOrder.paymentStatus === 'Paid' ? 'bg-emerald-100 text-emerald-800' :
-                          selectedOrder.paymentStatus === 'COD' ? 'bg-blue-100 text-blue-800' :
-                            'bg-red-100 text-red-800'
-                          }`}>
+                        <span className={styles.paymentBadge(selectedOrder.paymentStatus)}>
                           {selectedOrder.paymentStatus}
                         </span>
                       </div>
@@ -435,17 +415,17 @@ const OrdersPage = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="sticky bottom-0 bg-white border-t p-6">
+            <div className={styles.modalFooter}>
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={closeModal}
-                  className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                  className={styles.modalFooterButton}
                 >
                   Close
                 </button>
                 <button
                   onClick={closeModal}
-                  className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
+                  className={styles.modalFooterPrimaryButton}
                 >
                   Save Changes
                 </button>

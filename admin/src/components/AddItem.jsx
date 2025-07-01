@@ -1,7 +1,7 @@
-// frontend/src/pages/AddItemPage.jsx
 import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import { FiUpload, FiX, FiSave } from 'react-icons/fi';
+import { addItemPageStyles as styles } from '../assets/adminStyles';
 
 const initialFormState = {
   name: '',
@@ -49,7 +49,6 @@ export default function AddItemPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // build FormData
       const body = new FormData();
       body.append('name', formData.name);
       body.append('description', formData.description);
@@ -63,15 +62,13 @@ export default function AddItemPage() {
       const res = await axios.post(
         'http://localhost:4000/api/items',
         body,
-        {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        }
+        { headers: { 'Content-Type': 'multipart/form-data' } }
       );
 
       console.log('Created', res.data);
       alert('Product added!');
 
-      // reset
+      // Reset form
       setFormData(initialFormState);
       fileInputRef.current.value = '';
     } catch (err) {
@@ -83,36 +80,32 @@ export default function AddItemPage() {
   const { name, description, category, oldPrice, price, preview } = formData;
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-emerald-800 mb-4">
-          Add New Product
-        </h1>
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white rounded-xl shadow-lg p-6 space-y-6"
-        >
+    <div className={styles.pageContainer}>
+      <div className={styles.innerContainer}>
+        <h1 className={styles.heading}>Add New Product</h1>
+        
+        <form onSubmit={handleSubmit} className={styles.form}>
           {/* Name & Category */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className={styles.gridContainer}>
             <div>
-              <label className="block mb-1">Product Name *</label>
+              <label className={styles.label}>Product Name *</label>
               <input
                 type="text"
                 name="name"
                 value={name}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 border rounded-lg focus:ring-emerald-500"
+                className={styles.input}
               />
             </div>
             <div>
-              <label className="block mb-1">Category *</label>
+              <label className={styles.label}>Category *</label>
               <select
                 name="category"
                 value={category}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 border rounded-lg focus:ring-emerald-500"
+                className={styles.input}
               >
                 <option value="">Select category</option>
                 {categories.map((c) => (
@@ -126,68 +119,68 @@ export default function AddItemPage() {
 
           {/* Description */}
           <div>
-            <label className="block mb-1">Description</label>
+            <label className={styles.label}>Description</label>
             <textarea
               name="description"
               value={description}
               onChange={handleChange}
               rows="3"
-              className="w-full px-4 py-2 border rounded-lg focus:ring-emerald-500"
+              className={styles.textarea}
             />
           </div>
 
           {/* Prices */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className={styles.priceGrid}>
             <div>
-              <label className="block mb-1">Original Price (₹) *</label>
+              <label className={styles.label}>Original Price (₹) *</label>
               <input
                 type="number"
                 name="oldPrice"
                 value={oldPrice}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 border rounded-lg focus:ring-emerald-500"
+                className={styles.input}
               />
             </div>
             <div>
-              <label className="block mb-1">Selling Price (₹) *</label>
+              <label className={styles.label}>Selling Price (₹) *</label>
               <input
                 type="number"
                 name="price"
                 value={price}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 border rounded-lg focus:ring-emerald-500"
+                className={styles.input}
               />
             </div>
           </div>
 
           {/* Image Upload */}
           <div>
-            <label className="block mb-1">Product Image</label>
+            <label className={styles.label}>Product Image</label>
             <div
               onClick={() => fileInputRef.current.click()}
-              className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-emerald-500 transition"
+              className={styles.imageUploadContainer}
             >
               {preview ? (
                 <div className="relative">
                   <img
                     src={preview}
                     alt="Preview"
-                    className="w-full h-48 object-contain rounded-lg"
+                    className={styles.previewImage}
                   />
                   <button
                     type="button"
                     onClick={removeImage}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1"
+                    className={styles.removeButton}
                   >
                     <FiX size={16} />
                   </button>
                 </div>
               ) : (
                 <>
-                  <FiUpload className="mx-auto text-3xl text-gray-400 mb-2" />
-                  <p className="text-gray-500">
+                  <FiUpload className={styles.uploadIcon} />
+                  <p className={styles.uploadText}>
                     Click to upload image (max 5 MB)
                   </p>
                 </>
@@ -197,15 +190,12 @@ export default function AddItemPage() {
                 accept="image/*"
                 ref={fileInputRef}
                 onChange={handleImageUpload}
-                className="hidden"
+                className={styles.hiddenInput}
               />
             </div>
           </div>
 
-          <button
-            type="submit"
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-lg flex items-center justify-center"
-          >
+          <button type="submit" className={styles.submitButton}>
             <FiSave className="mr-2" />
             Add Product
           </button>
