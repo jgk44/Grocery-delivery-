@@ -1,6 +1,3 @@
-/*
-File: controllers/cart.controller.js
-*/
 import { CartItem } from '../models/cartModel.js';
 import createError from 'http-errors';
 
@@ -22,7 +19,6 @@ export const getCart = async (req, res, next) => {
     }
 };
 
-// POST /api/cart
 // POST /api/cart
 export const addToCart = async (req, res, next) => {
     try {
