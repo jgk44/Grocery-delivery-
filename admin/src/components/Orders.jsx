@@ -1,8 +1,9 @@
 // src/pages/admin/OrdersPage.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FiCheck, FiX, FiDollarSign, FiTruck, FiPackage, FiCreditCard, FiUser, FiMapPin, FiPhone, FiMail, FiEdit } from 'react-icons/fi';
+import { FiCheck, FiX, FiTruck, FiPackage, FiCreditCard, FiUser, FiMapPin, FiPhone, FiMail, FiEdit } from 'react-icons/fi';
 import { ordersPageStyles as styles } from '../assets/adminStyles';
+import { BsCurrencyRupee } from "react-icons/bs";
 
 const OrdersPage = () => {
   const [orders, setOrders] = useState([]);
@@ -145,7 +146,7 @@ const OrdersPage = () => {
           <div className={styles.statsCard('border-red-500')}>
             <div className={styles.statsCardInner}>
               <div className={styles.statsCardIconContainer('bg-red-100')}>
-                <FiDollarSign className={styles.statsCardIcon('text-red-600')} />
+                <BsCurrencyRupee className={styles.statsCardIcon('text-red-600')} />
               </div>
               <div>
                 <p className={styles.statsCardLabel}>Pending Payment</p>
