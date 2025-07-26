@@ -136,7 +136,7 @@ const UserOrdersPage = () => {
                       
                       </td>
                       <td className={`${ordersPageStyles.tableCell} font-medium`}>
-                        ${order.total.toFixed(2)}
+                        ₹{order.total.toFixed(2)}
                       </td>
                       <td className={ordersPageStyles.tableCell}>
                         <span className={`${ordersPageStyles.statusBadge} ${order.status === 'Delivered' ? 'bg-emerald-500/20 text-emerald-200' :
@@ -256,10 +256,10 @@ const UserOrdersPage = () => {
                           )}
                           <div className="flex-grow">
                             <div className="font-medium text-emerald-100">{item.name}</div>
-                            <div className="text-emerald-400">${item.price.toFixed(2)} × {item.quantity}</div>
+                            <div className="text-emerald-400">₹{item.price.toFixed(2)} × {item.quantity}</div>
                           </div>
                           <div className="font-medium text-emerald-100">
-                            ${(item.price * item.quantity).toFixed(2)}
+                            ₹{(item.price * item.quantity).toFixed(2)}
                           </div>
                         </div>
                       ))}
@@ -268,7 +268,7 @@ const UserOrdersPage = () => {
                       <div className="p-4 bg-emerald-800/50">
                         <div className="flex justify-between py-2">
                           <span className="text-emerald-300">Subtotal</span>
-                          <span className="font-medium text-emerald-100">${selectedOrder.total.toFixed(2)}</span>
+                          <span className="font-medium text-emerald-100">₹{selectedOrder.total.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between py-2">
                           <span className="text-emerald-300">Shipping</span>
@@ -276,12 +276,12 @@ const UserOrdersPage = () => {
                         </div>
                         <div className="flex justify-between py-2">
                           <span className="text-emerald-300">Tax</span>
-                          <span className="font-medium text-emerald-100">${(selectedOrder.total * 0.05).toFixed(2)}</span>
+                          <span className="font-medium text-emerald-100">₹{(selectedOrder.total * 0.05).toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between pt-4 mt-2 border-t border-emerald-700">
                           <span className="text-lg font-bold text-emerald-100">Total</span>
                           <span className="text-lg font-bold text-emerald-300">
-                            ${(selectedOrder.total * 1.05).toFixed(2)}
+                            ₹{(selectedOrder.total * 1.05).toFixed(2)}
                           </span>
                         </div>
                       </div>
