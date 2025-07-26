@@ -1,25 +1,27 @@
-import React, { useState, useRef } from 'react';
-import axios from 'axios';
-import { FiUpload, FiX, FiSave } from 'react-icons/fi';
-import { addItemPageStyles as styles } from '../assets/adminStyles';
+import React, { useState, useRef } from "react";
+import axios from "axios";
+import { FiUpload, FiX, FiSave } from "react-icons/fi";
+import { addItemPageStyles as styles } from "../assets/adminStyles";
 
 const initialFormState = {
-  name: '',
-  description: '',
-  category: '',
-  oldPrice: '',
-  price: '',
+  name: "",
+  description: "",
+  category: "",
+  oldPrice: "",
+  price: "",
   image: null,
-  preview: '',
+  preview: "",
 };
 
 const categories = [
-  'Fruits',
-  'Vegetables',
-  'Dairy & Eggs',
-  'Meat & Seafood',
-  'Bakery',
-  'Pantry',
+  "Fruits",
+  "Vegetables",
+  "Dairy",
+  "Beverages",
+  "Snacks",
+  "Seafood",
+  "Bakery",
+  "Meat",
 ];
 
 export default function AddItemPage() {
@@ -42,38 +44,36 @@ export default function AddItemPage() {
   };
 
   const removeImage = () => {
-    setFormData((f) => ({ ...f, image: null, preview: '' }));
-    fileInputRef.current.value = '';
+    setFormData((f) => ({ ...f, image: null, preview: "" }));
+    fileInputRef.current.value = "";
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const body = new FormData();
-      body.append('name', formData.name);
-      body.append('description', formData.description);
-      body.append('category', formData.category);
-      body.append('oldPrice', formData.oldPrice);
-      body.append('price', formData.price);
+      body.append("name", formData.name);
+      body.append("description", formData.description);
+      body.append("category", formData.category);
+      body.append("oldPrice", formData.oldPrice);
+      body.append("price", formData.price);
       if (formData.image) {
-        body.append('image', formData.image);
+        body.append("image", formData.image);
       }
 
-      const res = await axios.post(
-        'http://localhost:4000/api/items',
-        body,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
-      );
+      const res = await axios.post("http://localhost:4000/api/items", body, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
-      console.log('Created', res.data);
-      alert('Product added!');
+      console.log("Created", res.data);
+      alert("Product added!");
 
       // Reset form
       setFormData(initialFormState);
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     } catch (err) {
       console.error(err);
-      alert('Upload failed');
+      alert("Upload failed");
     }
   };
 
@@ -83,7 +83,7 @@ export default function AddItemPage() {
     <div className={styles.pageContainer}>
       <div className={styles.innerContainer}>
         <h1 className={styles.heading}>Add New Product</h1>
-        
+
         <form onSubmit={handleSubmit} className={styles.form}>
           {/* Name & Category */}
           <div className={styles.gridContainer}>
