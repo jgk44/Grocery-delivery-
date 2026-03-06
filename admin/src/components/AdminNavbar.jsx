@@ -19,7 +19,7 @@ const AdminNavbar = () => {
               <FiPackage className={styles.logoIcon} />
             </div>
             <h1 className={styles.logoText}>
-              <span className={styles.logoAccent}>Rush Basket</span> Admin
+              <span className={styles.logoAccent}>BlinCat</span> Admin
             </h1>
           </div>
 

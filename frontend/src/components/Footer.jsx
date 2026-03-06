@@ -55,10 +55,10 @@ const Footer = () => {
           {/* Brand */}
           <div>
             <h2 className={footerStyles.brandTitle}>
-              RUSH<span className={footerStyles.brandSpan}>BASKET</span>
+              Blin<span className={footerStyles.brandSpan}>Cat</span>
             </h2>
             <p className={footerStyles.brandText}>
-              Bringing you the freshest organic produce since 2010. Our mission is to deliver farm-fresh goodness straight to your doorstep.
+              Bringing you the freshest organic produce since 2026. Our mission is to deliver farm-fresh goodness straight to your doorstep.
             </p>
             <div className="flex space-x-3">
               {socialLinks.map((social, idx) => (
@@ -104,7 +104,7 @@ const Footer = () => {
                   <FaMapMarkerAlt className={footerStyles.contactIcon} />
                 </div>
                 <div>
-                  <p>123 Organic Valley, Green City, GC 54321</p>
+                  <p>Surat,Gujarat,India</p>
                 </div>
               </li>
               <li className={footerStyles.contactItem}>
@@ -112,7 +112,7 @@ const Footer = () => {
                   <FaPhone className={footerStyles.contactIcon} />
                 </div>
                 <div>
-                  <p>+01 0894561230</p>
+                  <p>+91 7418523690</p>
                 </div>
               </li>
               <li className={footerStyles.contactItem}>
@@ -120,7 +120,7 @@ const Footer = () => {
                   <FaEnvelope className={footerStyles.contactIcon} />
                 </div>
                 <div>
-                  <p>hexagonsservices@gmail.com</p>
+                  <p>blincat@gmail.com</p>
                 </div>
               </li>
             </ul>
@@ -151,42 +151,9 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Payment Methods */}
-        <div className={footerStyles.paymentSection}>
-          <h4 className={footerStyles.paymentTitle}>
-            <FiBookmark className={footerStyles.paymentIcon} /> We Accept All Major Payment Methods
-          </h4>
-          <div className={footerStyles.paymentMethods}>
-            {[FaCcVisa, FaCcMastercard, FaCcPaypal, FaCcAmex, FaApplePay].map((Icon, idx) => (
-              <div key={idx} className={footerStyles.paymentItem}>
-                <Icon className={footerStyles.paymentIcon} />
-              </div>
-            ))}
-          </div>
-        </div>
+        
 
-        {/* Attribution */}
-        <div className={footerStyles.attribution}>
-          <div className={footerStyles.attributionBadge}>
-            <div className={footerStyles.hexagonContainer}>
-              <div className={footerStyles.hexagon}></div>
-              <div className={footerStyles.hexagonInner}>
-                <div className={footerStyles.hexagonInnerShape}></div>
-              </div>
-            </div>
-            <span className={footerStyles.attributionText}>
-              Designed by{' '}
-              <a
-                href="https://hexagondigitalservices.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={footerStyles.attributionLink}
-              >
-                Hexagon Digital Services
-              </a>
-            </span>
-          </div>
-        </div>
+       
       </div>
 
       {/* Custom animations */}

@@ -24,7 +24,7 @@ function App() {
         {/* Footer */}
         <footer className="bg-emerald-800 text-white py-4">
           <div className="max-w-6xl mx-auto px-4 text-center text-sm">
-            <p>© {new Date().getFullYear()} Rush Basket Admin Panel. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} BlinCat Admin Panel. All rights reserved.</p>
           </div>
         </footer>
       </div>

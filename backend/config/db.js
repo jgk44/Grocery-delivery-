@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 
 export const connectDB = async () => {
-    await mongoose.connect('mongodb+srv://rachitsrivastava0406:rs6518619@cluster0.dn9jrpd.mongodb.net/RushBasket')
+    await mongoose.connect('mongodb+srv://blincat:blin123@cluster0.3rubylb.mongodb.net/blincat')
         .then(() => console.log("DB CONNECTED"));
 }
+
+

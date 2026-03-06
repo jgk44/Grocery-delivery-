@@ -140,7 +140,7 @@ export default function Navbar() {
               alt="RushBasket Logo"
               className={`${navbarStyles.logoImage} ${scrolled ? 'h-10 w-10' : 'h-12 w-12'}`}
             />
-            <span className={navbarStyles.logoText}>RushBasket</span>
+            <span className={navbarStyles.logoText}>BlinCat</span>
           </Link>
 
           {/* Desktop Nav */}
